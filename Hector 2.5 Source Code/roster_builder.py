@@ -1,6 +1,8 @@
 # Roster Builder Logic
 # Handles roster building logic, grades, summaries, and archetype detection
 
+import random
+
 from trade_value import parse_number, parse_salary, parse_years_left
 from archetypes import get_best_archetype, ARCHETYPES
 from player_utils import parse_star_rating, get_age, get_war, normalize_rating, STAR_TO_RATING_SCALE
@@ -34,6 +36,14 @@ GRADE_THRESHOLDS = {
     "D": {"min": 50, "color": "#ff6b6b"},   # Below average
     "F": {"min": 0, "color": "#c92a2a"},    # Major weakness
 }
+
+# Auto-generate weight multipliers
+ARCHETYPE_MATCH_WEIGHT_MULTIPLIER = 1.8  # Weight boost for matching archetype
+ARCHETYPE_GOOD_FIT_MULTIPLIER = 1.2      # Weight boost for good archetype fit
+MINIMUM_SELECTION_WEIGHT = 0.1           # Floor weight to allow surprises
+
+# Bench positions for auto-generate (utility-focused)
+BENCH_POSITIONS = ["C", "1B", "2B", "SS", "LF", "CF", "RF"]
 
 
 def get_grade_for_ovr(ovr, league_avg=55):
@@ -402,8 +412,6 @@ class RosterBuilder:
         
         Each call produces a different roster due to weighted randomness.
         """
-        import random
-        
         self.clear_roster()
         
         # Track used players to avoid duplicates
@@ -551,18 +559,14 @@ class RosterBuilder:
                     best = get_best_archetype(player, player_type)
                     if best and best["archetype"] == archetype_key:
                         # Strong boost for matching archetype
-                        weight *= 1.8
+                        weight *= ARCHETYPE_MATCH_WEIGHT_MULTIPLIER
                     elif best and best["score"] >= 60:
                         # Moderate boost for good archetype fit (any archetype)
-                        weight *= 1.2
+                        weight *= ARCHETYPE_GOOD_FIT_MULTIPLIER
             
             # Ensure minimum weight (allow surprises)
-            weight = max(0.1, weight)
+            weight = max(MINIMUM_SELECTION_WEIGHT, weight)
             weights.append(weight)
-        
-        # Ensure we have at least some valid weights
-        if not weights or all(w == 0 for w in weights):
-            weights = [1.0] * len(candidates)
         
         return weights
     
@@ -588,8 +592,6 @@ class RosterBuilder:
     
     def _fill_rotation_random(self, competitive_level, salary_tier, identity, used_players):
         """Fill rotation slots with weighted random selection."""
-        import random
-        
         for _ in range(ROTATION_COUNT):
             if len(self.rotation) >= ROTATION_COUNT:
                 break
@@ -604,8 +606,6 @@ class RosterBuilder:
     
     def _fill_bullpen_random(self, competitive_level, salary_tier, identity, used_players):
         """Fill bullpen slots with weighted random selection."""
-        import random
-        
         for _ in range(BULLPEN_COUNT):
             if len(self.bullpen) >= BULLPEN_COUNT:
                 break
@@ -620,18 +620,12 @@ class RosterBuilder:
     
     def _fill_bench_random(self, competitive_level, salary_tier, identity, used_players):
         """Fill bench slots with weighted random selection, preferring versatile players."""
-        import random
-        
-        # For bench, we want a mix of positions
-        # Prefer players who can play multiple positions or fill gaps
-        bench_positions = ["C", "1B", "2B", "SS", "OF"]  # Utility positions
-        
         for i in range(BENCH_COUNT):
             if len(self.bench) >= BENCH_COUNT:
                 break
             
             # Rotate through preferred bench positions
-            preferred_pos = bench_positions[i % len(bench_positions)]
+            preferred_pos = BENCH_POSITIONS[i % len(BENCH_POSITIONS)]
             
             # Get candidates - for bench, be more flexible with positions
             all_candidates = []
