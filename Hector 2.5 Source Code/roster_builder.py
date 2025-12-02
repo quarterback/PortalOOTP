@@ -51,6 +51,11 @@ ARCHETYPE_MATCH_WEIGHT_MULTIPLIER = 1.8  # Weight boost for matching archetype
 ARCHETYPE_GOOD_FIT_MULTIPLIER = 1.2      # Weight boost for good archetype fit
 MINIMUM_SELECTION_WEIGHT = 0.1           # Floor weight to allow surprises
 
+# Composite scoring constants
+RANDOMNESS_JITTER_SCALE = 10             # Scale factor for randomness jitter (score range is 0-100)
+PRE_ARB_VALUE_BONUS = 10                 # Bonus points for pre-arb players in value efficiency scoring
+ARBITRATION_VALUE_BONUS = 5              # Bonus points for arbitration players in value efficiency scoring
+
 # Bench positions for auto-generate (utility-focused)
 BENCH_POSITIONS = ["C", "1B", "2B", "SS", "LF", "CF", "RF"]
 
@@ -785,7 +790,7 @@ class RosterBuilder:
             
             # Apply randomness jitter
             if randomness > 0:
-                jitter = random.gauss(0, randomness * 10)  # Scaled to score range
+                jitter = random.gauss(0, randomness * RANDOMNESS_JITTER_SCALE)
                 composite = max(0, min(100, composite + jitter))
             
             name = player.get("Name", "")
@@ -965,7 +970,7 @@ class RosterBuilder:
         if player_type == "batter":
             games = get_games_played(player, "batter")
             
-            # Check sample size
+            # Check sample size (games played used as proxy for plate appearances)
             if games < MIN_PLATE_APPEARANCES:
                 # Fall back to ratings-based scoring
                 return self._score_current_ratings(player)
@@ -1129,9 +1134,9 @@ class RosterBuilder:
         status = yl_data.get("status", "unknown")
         
         if status == "pre_arb":
-            score = min(100, score + 10)
+            score = min(100, score + PRE_ARB_VALUE_BONUS)
         elif status == "arbitration":
-            score = min(100, score + 5)
+            score = min(100, score + ARBITRATION_VALUE_BONUS)
         
         return min(100, max(0, score))
     

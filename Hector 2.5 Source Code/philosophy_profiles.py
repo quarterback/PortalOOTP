@@ -14,6 +14,9 @@ Weight axes:
 - positional_scarcity: Bonus for premium positions (C, SS, CF for batters; SP for pitchers)
 """
 
+# Weight validation tolerance (weights should sum to ~1.0 within this tolerance)
+WEIGHT_TOLERANCE = 0.01
+
 # Default weight values for balanced evaluation
 DEFAULT_WEIGHTS = {
     "current_stats": 0.25,
@@ -269,7 +272,7 @@ def validate_weights(weights):
         return False, weights
     
     # Allow for small floating point differences
-    is_valid = abs(total - 1.0) < 0.01
+    is_valid = abs(total - 1.0) < WEIGHT_TOLERANCE
     
     # Normalize if needed
     if not is_valid:
