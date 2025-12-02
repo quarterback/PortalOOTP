@@ -311,7 +311,7 @@ The Roster Builder includes an auto-generate feature that builds complete roster
 
 | Option | Choices | Description |
 |--------|---------|-------------|
-| **Competitive Level** | Contender / Middle of the pack / Rebuilding | Contender favors high OVR, Rebuilding favors youth and upside |
+| **Competitive Level** | Contender / Middle of the pack / Rebuilding | Contender favors high OVR, Middle of the pack uses balanced weights, Rebuilding favors youth and upside |
 | **Salary Tier** | Big spender / Mid-market / Budget | Controls salary preferences for player selection |
 | **Team Identity** | Any / Power-focused / Speed-focused / Pitching-focused / Youth-focused / Budget-focused / OBP-focused | Boosts players matching the selected archetype |
 
@@ -325,7 +325,7 @@ The Roster Builder includes an auto-generate feature that builds complete roster
 **Example UI Dropdowns:**
 ```
 Competitive Level: [Contender ▼]
-Salary Tier:       [Mid-market ▼]  
+Salary Tier:       [Mid-market ▼]
 Team Identity:     [Power-focused ▼]
 
 [🎲 Generate!]  [Clear Roster]
