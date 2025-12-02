@@ -17,6 +17,9 @@ from .contract_tab import add_contract_tab
 from .trade_finder_tab import add_trade_finder_tab
 from .contract_value_tab import add_contract_value_tab
 from .platoon_finder_tab import add_platoon_finder_tab
+from .hidden_gems_tab import add_hidden_gems_tab
+from .roster_builder_tab import add_roster_builder_tab
+from percentiles import initialize_percentiles
 from .widgets import (
     create_title_label, create_summary_widgets, create_control_frame, update_summary_widgets,
     validate_fields, detect_wrong_import, show_loading_bar, set_app_icon
@@ -265,6 +268,8 @@ def build_gui():
             trade_finder_tab = add_trade_finder_tab(notebook, font)
             contract_value_tab = add_contract_value_tab(notebook, font)
             platoon_finder_tab = add_platoon_finder_tab(notebook, font)
+            hidden_gems_tab = add_hidden_gems_tab(notebook, font)
+            roster_builder_tab = add_roster_builder_tab(notebook, font)
             root._gui_vars = {
                 "summary_left_var": summary_left_var,
                 "summary_right_var": summary_right_var,
@@ -276,6 +281,8 @@ def build_gui():
                 "trade_finder_tab": trade_finder_tab,
                 "contract_value_tab": contract_value_tab,
                 "platoon_finder_tab": platoon_finder_tab,
+                "hidden_gems_tab": hidden_gems_tab,
+                "roster_builder_tab": roster_builder_tab,
                 "font": font,
                 "notebook": notebook
             }
@@ -295,6 +302,8 @@ def build_gui():
                         if result_reload.get("exception"):
                             messagebox.showerror("Data Load Error", str(result_reload["exception"]))
                         else:
+                            # Initialize percentiles for the new data
+                            initialize_percentiles(result_reload["batters"], result_reload["pitchers"])
                             pitcher_tab.refresh(result_reload["pitchers"])
                             batter_tab.refresh(result_reload["batters"])
                             teams_tab.refresh(result_reload["pitchers"], result_reload["batters"])
@@ -303,9 +312,13 @@ def build_gui():
                             trade_finder_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             contract_value_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             platoon_finder_tab.refresh(result_reload["pitchers"], result_reload["batters"])
+                            hidden_gems_tab.refresh(result_reload["pitchers"], result_reload["batters"])
+                            roster_builder_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             update_summary_widgets(DATA, summary_left_var, summary_right_var)
                 check_reload()
             reload_btn.config(command=refresh_all_tabs)
+            # Initialize percentiles for the initial data
+            initialize_percentiles(result["batters"], result["pitchers"])
             # Show initial data
             pitcher_tab.refresh(result["pitchers"])
             batter_tab.refresh(result["batters"])
@@ -315,6 +328,8 @@ def build_gui():
             trade_finder_tab.refresh(result["pitchers"], result["batters"])
             contract_value_tab.refresh(result["pitchers"], result["batters"])
             platoon_finder_tab.refresh(result["pitchers"], result["batters"])
+            hidden_gems_tab.refresh(result["pitchers"], result["batters"])
+            roster_builder_tab.refresh(result["pitchers"], result["batters"])
             update_summary_widgets(DATA, summary_left_var, summary_right_var)
 
     # Initial threaded load (while showing the loader)

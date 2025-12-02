@@ -15,6 +15,10 @@ This is a fork of [zab1996/HectorOOTP](https://github.com/zab1996/HectorOOTP) th
 - **Contract Value Analysis**: Evaluate contract efficiency with $/WAR calculations, surplus value, and contract categories (Surplus, Albatross, Arb Target)
 - **Platoon Finder**: Identify platoon opportunities by matching L/R batters at same positions, find DH candidates, and highlight platoon-proof switch hitters
 - **Trade Value Calculator**: Composite 1-100 trade value score for every player based on current production, future value, contract value, and position scarcity
+- **Percentile Rankings**: See where any player ranks league-wide for every meaningful metric with visual percentile bars
+- **Hidden Gems Finder**: Discover overlooked players across the league in categories like AAAA players, late bloomers, miscast players, and more
+- **Franchise Archetypes**: Filter and find players that fit your desired team-building philosophy (Speed & Defense, Mashers, Moneyball, etc.)
+- **Roster Builder Sandbox**: Build hypothetical rosters by selecting players from any team - full GM simulation mode
 - **Mac Compatible**: Can run from source with Python on macOS (see [Running on Mac](#running-on-mac))
 
 ---
@@ -26,6 +30,10 @@ This is a fork of [zab1996/HectorOOTP](https://github.com/zab1996/HectorOOTP) th
 - [Running on Mac](#running-on-mac)
 - [Flexible Weighting System](#flexible-weighting-system)
 - [Stats-Based Scoring](#stats-based-scoring)
+- [Percentile Rankings](#percentile-rankings)
+- [Hidden Gems Finder](#hidden-gems-finder)
+- [Franchise Archetypes](#franchise-archetypes)
+- [Roster Builder](#roster-builder)
 - [Trade Finder Tab](#trade-finder-tab)
 - [Contract Value Tab](#contract-value-tab)
 - [Platoon Finder Tab](#platoon-finder-tab)
@@ -149,6 +157,149 @@ Players with limited sample sizes automatically use ratings-only scoring:
 **Configuring Weights:**
 - Edit `batter_stat_weights.py` for batter stat weights and thresholds
 - Edit `pitcher_stat_weights.py` for pitcher stat weights and thresholds
+
+---
+
+## Percentile Rankings
+[⬆️ Back to Top](#top)
+
+The Percentile Rankings feature shows where any player ranks league-wide for every meaningful metric, providing instant context for player evaluation.
+
+### Metrics Calculated
+
+**Batters:**
+- Stats: wRC+, WAR, OPS+, OPS, wOBA, AVG, OBP, SLG, ISO, BB%, SO% (inverse)
+- Ratings: CON, POW, EYE, SPE, OVR, POT
+
+**Pitchers:**
+- Stats: WAR, ERA+, FIP (inverse), FIP- (inverse), SIERA (inverse), K/9, BB/9 (inverse), HR/9 (inverse)
+- Ratings: STU, MOV, CON, OVR, POT
+
+### Percentile Tiers
+
+| Percentile | Tier | Icon |
+|------------|------|------|
+| 90-100 | Elite | 💎 |
+| 70-89 | Above Average | ⭐ |
+| 40-69 | Average | ✅ |
+| 20-39 | Below Average | 📉 |
+| 0-19 | Poor | ❌ |
+
+### Visual Display
+
+Percentiles are shown with visual bars and tier indicators:
+```
+   wRC+ 176.0 | 98th | ████████████████████ 💎 Elite
+    WAR   7.6 | 99th | ████████████████████ 💎 Elite  
+    POW  60.0 | 75th | ███████████████░░░░░ ⭐ Above Avg
+    SPE  60.0 | 70th | ██████████████░░░░░░ ⭐ Above Avg
+```
+
+### Usage
+
+Percentile data is calculated automatically when data is loaded. Right-click on any player to view their full percentile breakdown in a player card popup.
+
+---
+
+## Hidden Gems Finder
+[⬆️ Back to Top](#top)
+
+The Hidden Gems tab helps find overlooked players across the league who deserve a second look.
+
+### Categories
+
+| Category | Icon | Criteria |
+|----------|------|----------|
+| **AAAA Players** | 📦 | OVR 45-55, good stats (wRC+ ≥100 or ERA+ ≥100), could start elsewhere |
+| **Late Bloomers** | 🌸 | Age 26-28, OVR close to POT, still has upside (POT - OVR ≥ 5) |
+| **Miscast Players** | 🎯 | Good bat, poor defense at premium position (C, SS, CF) |
+| **Undervalued Veterans** | 👴 | Age 30+, still producing (wRC+/ERA+ ≥95), cheap/expiring contract |
+| **Toolsy Gambles** | 🎰 | 1-2 elite tools (65+), other ratings mediocre, age ≤27 |
+| **Reliever Converts** | 🔄 | Listed as SP, low stamina (<45), good stuff or movement (≥55) |
+
+### Usage
+
+1. Navigate to the **Hidden Gems** tab
+2. Select a category from the dropdown or click on a category card
+3. Optionally filter by position
+4. Double-click any player to open their Stats+ page
+
+---
+
+## Franchise Archetypes
+[⬆️ Back to Top](#top)
+
+Franchise Archetypes help you find players that fit your desired team-building philosophy.
+
+### Available Archetypes
+
+| Archetype | Icon | Description |
+|-----------|------|-------------|
+| **Speed & Defense** | 🏃 | High SPE (≥60), high STE (≥60), elite DEF, contact-oriented |
+| **Mashers** | 💪 | High POW (≥60), high ISO (≥.180), corner positions |
+| **Moneyball** | 👁️ | High EYE (≥55), high BB% (≥10%), wOBA ≥.340 |
+| **Youth Movement** | 🌱 | Age ≤25, high POT (≥60), POT > OVR by ≥10, cheap contracts |
+| **Win Now** | 🏆 | High OVR (≥65), high current stats, age 26-32 |
+| **Budget Build** | 💰 | High WAR/$ ratio, pre-arb or arbitration, AAV <$5M |
+| **Balanced** | ⚖️ | No glaring weaknesses, all ratings ≥45 |
+
+### Fit Scores
+
+Each player receives a fit score (0-100) for each archetype:
+- **80-100**: Perfect fit
+- **60-79**: Good fit
+- **40-59**: Partial fit
+- **Below 40**: Not a fit
+
+---
+
+## Roster Builder
+[⬆️ Back to Top](#top)
+
+The Roster Builder Sandbox allows you to build hypothetical rosters by selecting players from any team - full GM simulation mode.
+
+### Layout
+
+**Player Pool (Left Panel)**
+- Search players by name
+- Filter by position
+- Filter by team
+- Shows OVR and WAR for each player
+- Click to add to roster
+
+**Your Roster (Center Panel)**
+- Lineup: 9 positional slots (C, 1B, 2B, 3B, SS, LF, CF, RF, DH)
+- Bench: 4 spots
+- Rotation: 5 SP spots
+- Bullpen: 7 RP spots
+
+**Team Summary (Right Panel)**
+- Total projected WAR
+- Total salary commitment
+- Average age
+- Average OVR
+- Position group grades (A+ to F)
+- Auto-detected archetype fit
+
+### Position Grades
+
+| Grade | Criteria |
+|-------|----------|
+| A+ | OVR ≥ 80 (best in league) |
+| A | OVR ≥ 70 (top 10%) |
+| B+ | OVR ≥ 65 (top 25%) |
+| B | OVR ≥ 60 (above average) |
+| C | OVR ≥ 55 (average) |
+| D | OVR ≥ 50 (below average) |
+| F | OVR < 50 (major weakness) |
+
+### Usage
+
+1. Navigate to the **Roster Builder** tab
+2. Use filters to find players in the Player Pool
+3. Double-click a player to add them to your roster
+4. View team summary and position grades on the right
+5. Click "Clear Roster" to start over
 
 ---
 
