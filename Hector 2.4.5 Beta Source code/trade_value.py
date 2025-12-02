@@ -1,6 +1,8 @@
 # Trade Value Calculator
 # Calculates a composite Trade Value score (1-100) for every player
 
+import re
+
 # Position scarcity multipliers - scarce positions are more valuable
 POSITION_SCARCITY = {
     "C": 1.15,
@@ -27,6 +29,14 @@ AGE_MULTIPLIERS = {
     "33_plus": 0.4,
 }
 
+# Contract status multipliers for trade value calculation
+CONTRACT_STATUS_MULTIPLIERS = {
+    "pre_arb": 1.25,      # Pre-arbitration (auto.) - cheap team control = premium
+    "arbitration": 1.10,  # Arbitration eligible - still controlled, costs rising
+    "signed": 1.0,        # Signed deal (no status) - known cost
+    "expiring": 0.85,     # Expiring (YL=1, no extension) - rental value only
+}
+
 # Trade Value Tiers
 TRADE_VALUE_TIERS = {
     "Elite": {"min": 80, "max": 100, "icon": "💎", "description": "Franchise cornerstones, untouchable"},
@@ -37,8 +47,46 @@ TRADE_VALUE_TIERS = {
     "Minimal": {"min": 1, "max": 19, "icon": "❌", "description": "Replacement level or worse"},
 }
 
+# Enhanced Contract Categories
+CONTRACT_CATEGORIES = {
+    "surplus": {"icon": "💰", "color": "#51cf66", "description": "High WAR, low AAV, pre-arb or arb"},
+    "fair_value": {"icon": "✅", "color": "#ffd43b", "description": "AAV within normal range for production"},
+    "albatross": {"icon": "🚨", "color": "#ff6b6b", "description": "High AAV, low WAR, many years left"},
+    "arb_target": {"icon": "🎯", "color": "#4dabf7", "description": "Arbitration status, good stats, affordable"},
+    "extension_committed": {"icon": "📋", "color": "#9775fa", "description": "Has extension contract value > 0"},
+}
+
+# Extension grade thresholds
+EXTENSION_GRADES = {
+    "steal": {"icon": "💎", "color": "#51cf66", "description": "Extension AAV well below market"},
+    "fair": {"icon": "✅", "color": "#ffd43b", "description": "Extension AAV appropriate for production"},
+    "risky": {"icon": "⚠️", "color": "#ff922b", "description": "Extension AAV high, age/injury concerns"},
+    "overpay": {"icon": "🚨", "color": "#ff6b6b", "description": "Extension AAV exceeds projected value"},
+}
+
 # League average $/WAR (used for surplus value calculation)
 LEAGUE_AVG_DOLLAR_PER_WAR = 8.0  # In millions, typical MLB value
+
+# Trade value calculation constants
+# OVR ratings in OOTP can be star ratings (1.0-5.0) or numeric (20-80 scale)
+STAR_RATING_MAX = 5.0  # Maximum star rating value
+NUMERIC_RATING_THRESHOLD = 10  # Values above this are assumed to be numeric scale (20-80)
+
+# Extension impact constants
+EXPENSIVE_EXTENSION_PENALTY = -2  # Trade value penalty for expensive extensions (AAV >= $20M)
+CHEAP_EXTENSION_BONUS = 2  # Trade value bonus for cheap extensions (AAV < $10M)
+
+# Trade value component scaling
+# Current production is scaled from 40 points (original) to 35 points (new weight)
+CURRENT_PRODUCTION_SCALE_FACTOR = 0.875  # 35/40 = 0.875
+
+# Status multiplier scaling bounds
+STATUS_MULTIPLIER_MIN = 0.9   # Minimum effect of status multiplier on total
+STATUS_MULTIPLIER_MAX = 1.1   # Maximum effect of status multiplier on total
+STATUS_MULTIPLIER_SCALE = 0.5  # Scaling factor for status multiplier effect
+
+# Default AAV ratio when expected AAV is zero (indicates overpay for non-producing player)
+DEFAULT_OVERPAY_RATIO = 2.0  # Treated as moderate overpay rather than extreme
 
 
 def parse_number(value):
@@ -53,6 +101,232 @@ def parse_number(value):
         return float(val)
     except (ValueError, AttributeError):
         return 0.0
+
+
+def parse_salary(value):
+    """
+    Parse salary/dollar amount from OOTP format.
+    Handles formats like: $850,000, $9,000,000, $133,550,000
+    Returns value in millions (e.g., $9,000,000 -> 9.0)
+    """
+    if not value or value == "-" or value == "":
+        return 0.0
+    try:
+        val = str(value).strip()
+        # Remove dollar sign and commas
+        val = val.replace("$", "").replace(",", "")
+        # Convert to millions
+        return float(val) / 1_000_000
+    except (ValueError, AttributeError):
+        return 0.0
+
+
+def parse_years_left(value):
+    """
+    Parse YL (Years Left) field which may contain status indicators.
+    Examples:
+        "1 (auto.)" -> {"years": 1, "status": "pre_arb"}
+        "1 (arbitr.)" -> {"years": 1, "status": "arbitration"}
+        "7" -> {"years": 7, "status": "signed"}
+        "5" -> {"years": 5, "status": "signed"}
+    
+    Returns dict with years (int) and status (str)
+    """
+    if not value or value == "-" or value == "":
+        return {"years": 0, "status": "unknown"}
+    
+    val = str(value).strip()
+    
+    # Check for status indicators
+    if "(auto.)" in val:
+        # Pre-arbitration, automatic renewal
+        years_match = re.match(r"(\d+)", val)
+        years = int(years_match.group(1)) if years_match else 1
+        return {"years": years, "status": "pre_arb"}
+    elif "(arbitr.)" in val:
+        # Arbitration eligible
+        years_match = re.match(r"(\d+)", val)
+        years = int(years_match.group(1)) if years_match else 1
+        return {"years": years, "status": "arbitration"}
+    else:
+        # Just a number, no status - signed deal
+        try:
+            years = int(float(val))
+            return {"years": years, "status": "signed"}
+        except (ValueError, TypeError):
+            return {"years": 0, "status": "unknown"}
+
+
+def get_contract_status(player):
+    """
+    Determine the contract status category for a player.
+    
+    Categories:
+    - Pre-Arb: (auto.) in YL - cheap, team-controlled
+    - Arbitration: (arbitr.) in YL - costs rising, but still controlled
+    - Free Agent Soon: YL = 1 (no status, no extension) - expiring, trade candidate
+    - Locked Up: TY >= 4 - long-term deal
+    
+    Returns tuple (status_name, status_key, color)
+    """
+    yl_data = parse_years_left(player.get("YL", ""))
+    ty = parse_number(player.get("TY", 0))
+    ecv = parse_salary(player.get("ECV", 0))
+    
+    status = yl_data.get("status", "unknown")
+    years = yl_data.get("years", 0)
+    
+    if status == "pre_arb":
+        return ("Pre-Arb", "pre_arb", "#51cf66")  # Green
+    elif status == "arbitration":
+        return ("Arbitration", "arbitration", "#4dabf7")  # Blue
+    elif years == 1 and ecv <= 0 and status == "signed":
+        return ("FA Soon", "expiring", "#ff922b")  # Orange
+    elif ty >= 4:
+        return ("Locked Up", "signed", "#9775fa")  # Purple
+    else:
+        return ("Signed", "signed", "#d4d4d4")  # Gray
+
+
+def calculate_aav(player):
+    """
+    Calculate Average Annual Value (AAV) from contract data.
+    Formula: CV / TY (total contract value / total years)
+    
+    Returns AAV in millions, or 0 if data unavailable
+    """
+    cv = parse_salary(player.get("CV", 0))
+    ty = parse_number(player.get("TY", 0))
+    
+    # Fallback to SLR if CV not available
+    if cv <= 0:
+        cv = parse_salary(player.get("SLR", 0))
+        ty = 1  # If using current salary, assume 1 year
+    
+    if ty <= 0:
+        return cv  # Return current salary if no years
+    
+    return cv / ty
+
+
+def calculate_total_commitment(player):
+    """
+    Calculate total contract burden including extension.
+    
+    Returns dict with:
+    - total_value: CV + ECV (total dollars committed)
+    - total_years: TY + ETY (total years of commitment)
+    - overall_aav: (CV + ECV) / (TY + ETY)
+    """
+    cv = parse_salary(player.get("CV", 0))
+    ty = parse_number(player.get("TY", 0))
+    ecv = parse_salary(player.get("ECV", 0))
+    ety = parse_number(player.get("ETY", 0))
+    
+    # Fallback to SLR if CV not available
+    if cv <= 0:
+        cv = parse_salary(player.get("SLR", 0))
+        ty = 1
+    
+    total_value = cv + ecv
+    total_years = ty + ety
+    
+    if total_years <= 0:
+        overall_aav = total_value
+    else:
+        overall_aav = total_value / total_years
+    
+    return {
+        "total_value": total_value,
+        "total_years": total_years,
+        "overall_aav": overall_aav,
+        "has_extension": ecv > 0
+    }
+
+
+def get_extension_analysis(player, player_type="batter"):
+    """
+    Analyze a player's extension if they have one.
+    
+    Returns dict with:
+    - has_extension: bool
+    - extension_aav: ECV / ETY
+    - extension_grade: Steal/Fair/Risky/Overpay
+    - red_flags: list of concerns
+    """
+    ecv = parse_salary(player.get("ECV", 0))
+    ety = parse_number(player.get("ETY", 0))
+    
+    if ecv <= 0 or ety <= 0:
+        return {"has_extension": False}
+    
+    extension_aav = ecv / ety
+    
+    # Get player attributes for grading
+    if player_type == "pitcher":
+        war = parse_number(player.get("WAR (Pitcher)", player.get("WAR", 0)))
+    else:
+        war = parse_number(player.get("WAR (Batter)", player.get("WAR", 0)))
+    
+    try:
+        age = int(player.get("Age", 0))
+    except (ValueError, TypeError):
+        age = 0
+    
+    ovr = parse_number(player.get("OVR", 0))
+    prone = str(player.get("Prone", "")).lower()
+    
+    # Calculate expected AAV based on WAR (rough estimate)
+    # Use league average $/WAR as baseline
+    expected_aav = war * LEAGUE_AVG_DOLLAR_PER_WAR
+    if expected_aav <= 0:
+        expected_aav = 5.0  # Minimum expected for a major league player
+    
+    # Grade the extension - calculate AAV ratio
+    # Use DEFAULT_OVERPAY_RATIO when expected_aav is 0 to indicate moderate overpay
+    aav_ratio = extension_aav / expected_aav if expected_aav > 0 else DEFAULT_OVERPAY_RATIO
+    
+    red_flags = []
+    
+    # Check for red flags
+    if age >= 30 and ety >= 5:
+        red_flags.append(f"Age {age} + {ety} year extension")
+    if "fragile" in prone or "prone" in prone:
+        red_flags.append("Durability concerns")
+    # OVR can be star rating (1.0-5.0) or numeric (20-80)
+    # For star ratings, 3.0 or below with long extension is a concern
+    if ovr <= NUMERIC_RATING_THRESHOLD and ovr <= 3.0 and ety >= 4:
+        red_flags.append("Low OVR with long extension")
+    
+    # Determine grade
+    if aav_ratio <= 0.7:
+        grade = "steal"
+    elif aav_ratio <= 1.1:
+        grade = "fair"
+    elif len(red_flags) > 0 or aav_ratio <= 1.5:
+        grade = "risky"
+    else:
+        grade = "overpay"
+    
+    grade_info = EXTENSION_GRADES[grade]
+    
+    # Calculate total commitment
+    commitment = calculate_total_commitment(player)
+    
+    return {
+        "has_extension": True,
+        "extension_value": ecv,
+        "extension_years": ety,
+        "extension_aav": extension_aav,
+        "grade": grade,
+        "grade_icon": grade_info["icon"],
+        "grade_color": grade_info["color"],
+        "grade_description": grade_info["description"],
+        "red_flags": red_flags,
+        "total_commitment": commitment["total_value"],
+        "total_years": commitment["total_years"],
+        "overall_aav": commitment["overall_aav"]
+    }
 
 
 def get_age_multiplier(age):
@@ -144,34 +418,78 @@ def calculate_future_value_score(player):
 
 def calculate_contract_value_score(player):
     """
-    Calculate contract value score (0-20 points) based on years left and salary
-    20% weight in final trade value
+    Calculate enhanced contract value score (0-25 points) based on:
+    - Years of control (using TY for total years)
+    - Contract status (Pre-Arb/Arb/Signed/Expiring)
+    - AAV (Average Annual Value)
+    - Extension impact
+    
+    25% weight in final trade value (updated from 20%)
     More years of control at low cost = more value
     """
-    yl = parse_number(player.get("YL", 0))
-    salary = parse_number(player.get("SLR", 0))
+    # Parse contract data with new columns
+    yl_data = parse_years_left(player.get("YL", ""))
+    years_left = yl_data.get("years", 0)
+    status = yl_data.get("status", "unknown")
     
-    # Years left contribution (0-10 points)
+    # Use TY (Total Years) if available, otherwise fall back to YL
+    ty = parse_number(player.get("TY", 0))
+    if ty <= 0:
+        ty = years_left
+    
+    # Calculate AAV
+    aav = calculate_aav(player)
+    
+    # Check for extension
+    ecv = parse_salary(player.get("ECV", 0))
+    ety = parse_number(player.get("ETY", 0))
+    has_extension = ecv > 0 and ety > 0
+    
+    # Years of control contribution (0-10 points)
     # More years = more value, capped at 6 years
-    yl_score = min(10, yl * 1.67)
-    
-    # Salary efficiency (0-10 points)
-    # Lower salary = more value
-    # Typical range: 0-30 million
-    if salary <= 0:
-        salary_score = 10  # No salary = max value
-    elif salary <= 1:
-        salary_score = 9
-    elif salary <= 5:
-        salary_score = 7
-    elif salary <= 10:
-        salary_score = 5
-    elif salary <= 20:
-        salary_score = 3
+    # Pre-arb years worth more than arb years
+    if status == "pre_arb":
+        years_score = min(10, years_left * 2.0)  # Pre-arb years are premium
+    elif status == "arbitration":
+        years_score = min(10, years_left * 1.8)  # Arb years still valuable
     else:
-        salary_score = 1
+        years_score = min(10, years_left * 1.67)  # Signed years normal value
     
-    return round(yl_score + salary_score, 2)
+    # Contract status multiplier contribution (0-5 points)
+    status_multiplier = CONTRACT_STATUS_MULTIPLIERS.get(status, 1.0)
+    status_score = (status_multiplier - 0.85) / (1.25 - 0.85) * 5  # Scale to 0-5
+    
+    # AAV efficiency contribution (0-8 points)
+    # Lower AAV = more value
+    if aav <= 0:
+        aav_score = 8  # No salary = max value
+    elif aav < 1:
+        aav_score = 8
+    elif aav < 5:
+        aav_score = 6
+    elif aav < 10:
+        aav_score = 4
+    elif aav < 20:
+        aav_score = 2
+    elif aav < 25:
+        aav_score = 1
+    else:
+        aav_score = 0  # Very high AAV = slight penalty
+    
+    # Extension impact (bonus or penalty based on extension AAV)
+    extension_score = 0
+    if has_extension:
+        extension_aav = ecv / ety if ety > 0 else 0
+        # Team-friendly extension = bonus, overpay = penalty
+        if extension_aav < 10:
+            extension_score = CHEAP_EXTENSION_BONUS  # Good extension
+        elif extension_aav < 20:
+            extension_score = 0  # Neutral
+        else:
+            extension_score = EXPENSIVE_EXTENSION_PENALTY  # Expensive extension (harder to trade)
+    
+    total_score = years_score + status_score + aav_score + extension_score
+    return round(max(0, min(25, total_score)), 2)
 
 
 def calculate_position_scarcity_score(player):
@@ -197,24 +515,45 @@ def calculate_trade_value(player, player_type="batter"):
     """
     Calculate composite Trade Value score (1-100) for a player
     
-    Components:
-    - Current Production: 40% weight (0-40 points)
+    Updated Components with enhanced contract analysis:
+    - Current Production: 35% weight (0-35 points)
     - Future Value: 30% weight (0-30 points)  
-    - Contract Value: 20% weight (0-20 points)
+    - Contract Value: 25% weight (0-25 points) - enhanced with status multipliers
     - Position Scarcity: 10% weight (0-10 points)
     
     Returns dict with trade value and component breakdown
     """
     current_prod = calculate_current_production_score(player, player_type)
+    # Scale current production from 0-40 to 0-35 points (new weight)
+    current_prod = round(current_prod * CURRENT_PRODUCTION_SCALE_FACTOR, 2)
+    
     future_value = calculate_future_value_score(player)
-    contract_value = calculate_contract_value_score(player)
+    contract_value = calculate_contract_value_score(player)  # Now returns 0-25
     position_scarcity = calculate_position_scarcity_score(player)
+    
+    # Apply contract status multiplier to base value
+    yl_data = parse_years_left(player.get("YL", ""))
+    status = yl_data.get("status", "unknown")
+    status_multiplier = CONTRACT_STATUS_MULTIPLIERS.get(status, 1.0)
     
     # Total trade value (scaled 1-100)
     raw_total = current_prod + future_value + contract_value + position_scarcity
-    trade_value = max(1, min(100, round(raw_total)))
+    
+    # Apply status multiplier to the total with bounded effect
+    # Formula: clamp the multiplier effect between MIN and MAX
+    # The (status_multiplier - 1) * SCALE + 1 transforms the multiplier to a smaller range
+    multiplier_effect = (status_multiplier - 1) * STATUS_MULTIPLIER_SCALE + 1
+    bounded_multiplier = min(STATUS_MULTIPLIER_MAX, max(STATUS_MULTIPLIER_MIN, multiplier_effect))
+    adjusted_total = raw_total * bounded_multiplier
+    trade_value = max(1, min(100, round(adjusted_total)))
     
     tier = get_trade_value_tier(trade_value)
+    
+    # Get additional contract info
+    aav = calculate_aav(player)
+    contract_status = get_contract_status(player)
+    commitment = calculate_total_commitment(player)
+    extension = get_extension_analysis(player, player_type)
     
     return {
         "trade_value": trade_value,
@@ -224,7 +563,18 @@ def calculate_trade_value(player, player_type="batter"):
         "position_scarcity": position_scarcity,
         "tier": tier["name"],
         "tier_icon": tier["icon"],
-        "tier_description": tier["description"]
+        "tier_description": tier["description"],
+        # Enhanced contract info
+        "aav": aav,
+        "contract_status": contract_status[0],
+        "contract_status_key": contract_status[1],
+        "contract_status_color": contract_status[2],
+        "total_commitment": commitment["total_value"],
+        "total_years": commitment["total_years"],
+        "has_extension": extension.get("has_extension", False),
+        "extension_aav": extension.get("extension_aav", 0),
+        "extension_grade": extension.get("grade", ""),
+        "extension_grade_icon": extension.get("grade_icon", ""),
     }
 
 
@@ -275,13 +625,14 @@ def calculate_surplus_value(player, player_type="batter"):
 
 def get_contract_category(player, player_type="batter"):
     """
-    Categorize player's contract value
+    Enhanced categorization of player's contract value using new contract columns.
     
     Categories:
-    - 💰 Surplus: WAR ≥ 2.0 AND (low salary OR YL ≤ 2)
-    - ⚠️ Fair Value: $/WAR within normal range
-    - 🚨 Albatross: High salary, low WAR (< 1.0), YL ≥ 2
-    - 🎯 Arb Target: Age 25-27, good stats, YL ≤ 3
+    - 💰 Surplus: High WAR, low AAV, pre-arb or arb status
+    - ✅ Fair Value: AAV within normal range for production
+    - 🚨 Albatross: High AAV, low WAR, many years left
+    - 🎯 Arb Target: Arbitration status, good stats, affordable
+    - 📋 Extension Committed: Has ECV > 0
     
     Returns tuple (category_name, icon, color)
     """
@@ -290,25 +641,46 @@ def get_contract_category(player, player_type="batter"):
     else:
         war = parse_number(player.get("WAR (Batter)", player.get("WAR", 0)))
     
-    salary = parse_number(player.get("SLR", 0))
-    yl = parse_number(player.get("YL", 0))
+    # Get enhanced contract data
+    aav = calculate_aav(player)
+    yl_data = parse_years_left(player.get("YL", ""))
+    years_left = yl_data.get("years", 0)
+    status = yl_data.get("status", "unknown")
+    
+    # Check for extension
+    ecv = parse_salary(player.get("ECV", 0))
+    has_extension = ecv > 0
     
     try:
         age = int(player.get("Age", 0))
     except (ValueError, TypeError):
         age = 0
     
-    # Check for Albatross first (high salary, low production)
-    if salary >= 10 and war < 1.0 and yl >= 2:
-        return ("Albatross", "🚨", "#ff6b6b")
+    # Check for Extension Committed first (special category)
+    if has_extension:
+        cat_info = CONTRACT_CATEGORIES["extension_committed"]
+        return ("Extension", cat_info["icon"], cat_info["color"])
     
-    # Check for Arb Target (young with good stats and team control)
-    if 25 <= age <= 27 and war >= 1.5 and yl <= 3:
-        return ("Arb Target", "🎯", "#4dabf7")
+    # Check for Albatross (high AAV, low WAR, many years left)
+    if aav >= 20 and war < 1.0 and years_left >= 2:
+        cat_info = CONTRACT_CATEGORIES["albatross"]
+        return ("Albatross", cat_info["icon"], cat_info["color"])
     
-    # Check for Surplus value
-    if war >= 2.0 and (salary <= 5 or yl <= 2):
-        return ("Surplus", "💰", "#51cf66")
+    # Check for Arb Target (arbitration status, good stats, affordable)
+    if status == "arbitration" and war >= 1.5 and aav < 10:
+        cat_info = CONTRACT_CATEGORIES["arb_target"]
+        return ("Arb Target", cat_info["icon"], cat_info["color"])
+    
+    # Check for Surplus value (high WAR, low AAV, pre-arb or arb)
+    if war >= 2.0 and aav < 8 and status in ["pre_arb", "arbitration"]:
+        cat_info = CONTRACT_CATEGORIES["surplus"]
+        return ("Surplus", cat_info["icon"], cat_info["color"])
+    
+    # Also check traditional surplus criteria
+    if war >= 2.0 and (aav <= 5 or years_left <= 2):
+        cat_info = CONTRACT_CATEGORIES["surplus"]
+        return ("Surplus", cat_info["icon"], cat_info["color"])
     
     # Default to Fair Value
-    return ("Fair Value", "⚠️", "#ffd43b")
+    cat_info = CONTRACT_CATEGORIES["fair_value"]
+    return ("Fair Value", cat_info["icon"], cat_info["color"])
