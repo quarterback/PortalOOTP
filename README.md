@@ -181,9 +181,40 @@ Find young players with significant development upside:
 ## Contract Value Tab
 [⬆️ Back to Top](#top)
 
-The Contract Value tab helps evaluate whether players provide good value relative to their salary. Useful for long-term roster building and identifying value opportunities.
+The Contract Value tab helps evaluate whether players provide good value relative to their salary. Useful for long-term roster building and identifying value opportunities. The tab now includes enhanced contract analysis using new OOTP export columns.
+
+### New Contract Columns Supported
+
+The following new columns from OOTP HTML exports are now parsed and used:
+
+| Column | Meaning | Example Values |
+|--------|---------|----------------|
+| `SLR` | Current Year Salary | `$850,000`, `$9,000,000` |
+| `YL` | Years Left (with status) | `1 (auto.)`, `1 (arbitr.)`, `7` |
+| `CV` | Contract Value (Total) | `$850,000`, `$133,550,000` |
+| `TY` | Total Years on Contract | `1`, `8`, `10` |
+| `ECV` | Extension Contract Value | `-`, `$258,000,000` |
+| `ETY` | Extension Total Years | `0`, `8` |
+
+### Contract Status Detection
+
+The YL (Years Left) field is parsed to detect contract status:
+- `1 (auto.)` = **Pre-Arb** - Pre-arbitration, automatic renewal (cheap, team-controlled)
+- `1 (arbitr.)` = **Arbitration** - Arbitration eligible (costs rising, but still controlled)
+- `1` (no status, no extension) = **FA Soon** - Expiring, trade candidate
+- TY >= 4 = **Locked Up** - Long-term deal
 
 ### Metrics Calculated
+
+**Average Annual Value (AAV)**
+- Formula: `CV / TY` (total contract value / total years)
+- More accurate than just current salary
+- Falls back to SLR if CV not available
+
+**Total Commitment**
+- Current contract: `CV`
+- Plus extension if exists: `CV + ECV`
+- Total years of commitment: `TY + ETY`
 
 **$/WAR (Dollars per WAR)**
 - Formula: `Salary / WAR`
@@ -200,18 +231,54 @@ The Contract Value tab helps evaluate whether players provide good value relativ
 
 | Category | Icon | Criteria |
 |----------|------|----------|
-| **Surplus** | 💰 | WAR ≥ 2.0 AND (salary ≤ $5M OR YL ≤ 2) |
-| **Fair Value** | ⚠️ | $/WAR within normal range |
-| **Albatross** | 🚨 | Salary ≥ $10M, WAR < 1.0, YL ≥ 2 |
-| **Arb Target** | 🎯 | Age 25-27, WAR ≥ 1.5, YL ≤ 3 |
+| **Surplus** | 💰 | High WAR, low AAV, pre-arb or arb status |
+| **Fair Value** | ✅ | AAV within normal range for production |
+| **Albatross** | 🚨 | High AAV (≥$20M), low WAR (<1.0), many years left |
+| **Arb Target** | 🎯 | Arbitration status, WAR ≥1.5, AAV <$10M |
+| **Extension** | 📋 | Has extension contract value > 0 |
 
 **Features:**
 - Filter by player type (Batters/Pitchers)
 - Filter by position
 - Filter by contract category
+- Filter by contract status (Pre-Arb, Arbitration, FA Soon, etc.)
 - Minimum WAR threshold
 - Sortable by all columns
 - Color-coded rows by category
+
+---
+
+## Extension Watch
+[⬆️ Back to Top](#top)
+
+The Extension Watch section (within the Contract Value tab) highlights players with pending/accepted extensions and evaluates whether they're good deals.
+
+### Extension Analysis
+
+For each player with `ECV > 0`:
+
+| Field | Calculation |
+|-------|-------------|
+| Extension AAV | `ECV / ETY` |
+| Total Commitment | `CV + ECV` |
+| Total Years | `TY + ETY` |
+| Overall AAV | `(CV + ECV) / (TY + ETY)` |
+
+### Extension Grades
+
+| Grade | Icon | Criteria |
+|-------|------|----------|
+| **Steal** | 💎 | Extension AAV well below market for player's tier |
+| **Fair** | ✅ | Extension AAV appropriate for production |
+| **Risky** | ⚠️ | Extension AAV high, player has injury/age concerns |
+| **Overpay** | 🚨 | Extension AAV exceeds player's projected value |
+
+### Extension Red Flags
+
+The following situations are flagged as concerns:
+- Age 30+ with ETY >= 5 (long extension for older player)
+- Fragile/Prone durability with big extension
+- Low OVR with long extension
 
 ---
 
@@ -245,16 +312,33 @@ List all switch hitters in the database:
 ## Trade Value Calculator
 [⬆️ Back to Top](#top)
 
-The Trade Value column appears in both Batters and Pitchers tabs, providing a composite score (1-100) for quick comparison.
+The Trade Value column appears in both Batters and Pitchers tabs, providing a composite score (1-100) for quick comparison. The calculator now uses enhanced contract data for more accurate valuations.
 
 ### Trade Value Components
 
 | Component | Weight | Description |
 |-----------|--------|-------------|
-| **Current Production** | 40% | Based on WAR and calculated scores |
+| **Current Production** | 35% | Based on WAR and calculated scores |
 | **Future Value** | 30% | POT rating × age multiplier |
-| **Contract Value** | 20% | Years of control + salary efficiency |
+| **Contract Value** | 25% | Years of control + AAV efficiency + contract status |
 | **Position Scarcity** | 10% | Premium for scarce positions |
+
+### Contract Status Multipliers
+
+The contract value component now factors in contract status:
+
+| Status | Multiplier | Rationale |
+|--------|------------|-----------|
+| Pre-Arb `(auto.)` | 1.25x | Cheap team control = premium |
+| Arbitration `(arbitr.)` | 1.10x | Still controlled, costs rising |
+| Signed Deal (no status) | 1.0x | Known cost |
+| Expiring (YL=1, no ext) | 0.85x | Rental value only |
+
+### Extension Impact on Trade Value
+
+- Players with extensions have their total commitment factored in
+- Team-friendly extensions (low AAV) = bonus to trade value
+- Expensive extensions (high AAV) = penalty (harder to move)
 
 ### Age Multipliers for Future Value
 
@@ -354,9 +438,15 @@ Hector can ingest the following statistics from your OOTP HTML export:
 ### Contract/Other
 | Stat | Description |
 |------|-------------|
-| YL | Years left on contract |
-| SLR | Salary |
+| SLR | Current year salary (e.g., `$9,000,000`) |
+| YL | Years left on contract with status (e.g., `1 (auto.)`, `1 (arbitr.)`, `7`) |
+| CV | Total contract value (e.g., `$133,550,000`) |
+| TY | Total years on current contract |
+| ECV | Extension contract value (e.g., `$258,000,000` or `-` if none) |
+| ETY | Extension total years (e.g., `8` or `0` if none) |
 | SctAcc | Scout accuracy |
+
+> **Note:** The new contract columns (CV, TY, ECV, ETY) provide enhanced contract analysis. If these columns are not in your export, Hector will fall back to using SLR and YL for basic contract calculations.
 
 ---
 

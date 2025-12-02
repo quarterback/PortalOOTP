@@ -6,6 +6,7 @@ from .widgets import (
     load_player_url_template,
 )
 from .tooltips import add_button_tooltip
+from trade_value import parse_number, parse_years_left, get_contract_status
 
 player_url_template = load_player_url_template()
 
@@ -24,20 +25,6 @@ POTENTIAL_GAP_THRESHOLD = 15
 # Display thresholds for highlighting high-value entries
 HIGH_VALUE_WAR_THRESHOLD = 2.0  # WAR threshold for highlighting veterans
 HIGH_POTENTIAL_GAP_THRESHOLD = 2.0  # Star gap threshold for highlighting prospects
-
-
-def parse_number(value):
-    """Parse numeric value, handling '-' and empty strings"""
-    if not value or value == "-" or value == "":
-        return 0.0
-    try:
-        val = str(value).replace(",", "").strip()
-        # Handle star ratings
-        if "Stars" in val:
-            return float(val.split()[0])
-        return float(val)
-    except (ValueError, AttributeError):
-        return 0.0
 
 
 def add_trade_finder_tab(notebook, font):
@@ -251,13 +238,13 @@ def add_trade_finder_tab(notebook, font):
             if age < VETERAN_MIN_AGE:
                 continue
             
-            # Check years left
-            try:
-                yl = int(parse_number(p.get("YL", "99")))
-            except:
-                yl = 99
+            # Check years left using enhanced parsing
+            yl_data = parse_years_left(p.get("YL", ""))
+            yl = yl_data.get("years", 99)
+            status = yl_data.get("status", "unknown")
             
-            if yl > 1:
+            # Expiring = YL <= 1 AND not pre-arb (auto renewal)
+            if yl > 1 or status == "pre_arb":
                 continue
             
             # Check position filter
@@ -272,6 +259,9 @@ def add_trade_finder_tab(notebook, font):
             if war < min_war:
                 continue
             
+            # Get contract status for display
+            contract_status, _, _ = get_contract_status(p)
+            
             score = p.get("Scores", {}).get("total", 0)
             
             veterans.append({
@@ -282,6 +272,7 @@ def add_trade_finder_tab(notebook, font):
                 "age": age,
                 "team": p.get("ORG", ""),
                 "yl": yl,
+                "status": contract_status,
                 "war": war,
                 "metric": era_plus,  # ERA+ for pitchers
                 "metric_label": "ERA+",
@@ -298,13 +289,13 @@ def add_trade_finder_tab(notebook, font):
             if age < VETERAN_MIN_AGE:
                 continue
             
-            # Check years left
-            try:
-                yl = int(parse_number(b.get("YL", "99")))
-            except:
-                yl = 99
+            # Check years left using enhanced parsing
+            yl_data = parse_years_left(b.get("YL", ""))
+            yl = yl_data.get("years", 99)
+            status = yl_data.get("status", "unknown")
             
-            if yl > 1:
+            # Expiring = YL <= 1 AND not pre-arb (auto renewal)
+            if yl > 1 or status == "pre_arb":
                 continue
             
             # Check position filter
@@ -319,6 +310,9 @@ def add_trade_finder_tab(notebook, font):
             if war < min_war:
                 continue
             
+            # Get contract status for display
+            contract_status, _, _ = get_contract_status(b)
+            
             score = b.get("Scores", {}).get("total", 0)
             
             veterans.append({
@@ -329,6 +323,7 @@ def add_trade_finder_tab(notebook, font):
                 "age": age,
                 "team": b.get("ORG", ""),
                 "yl": yl,
+                "status": contract_status,
                 "war": war,
                 "metric": wrc_plus,  # wRC+ for batters
                 "metric_label": "wRC+",
