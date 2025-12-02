@@ -19,6 +19,7 @@ This is a fork of [zab1996/HectorOOTP](https://github.com/zab1996/HectorOOTP) th
 - **Hidden Gems Finder**: Discover overlooked players across the league in categories like AAAA players, late bloomers, miscast players, and more
 - **Franchise Archetypes**: Filter and find players that fit your desired team-building philosophy (Speed & Defense, Mashers, Moneyball, etc.)
 - **Roster Builder Sandbox**: Build hypothetical rosters by selecting players from any team - full GM simulation mode
+- **Auto-Generate Rosters**: Automatically build complete teams with randomized player selection based on competitive level, budget, and team identity preferences
 - **Mac Compatible**: Can run from source with Python on macOS (see [Running on Mac](#running-on-mac))
 
 ---
@@ -34,6 +35,7 @@ This is a fork of [zab1996/HectorOOTP](https://github.com/zab1996/HectorOOTP) th
 - [Hidden Gems Finder](#hidden-gems-finder)
 - [Franchise Archetypes](#franchise-archetypes)
 - [Roster Builder](#roster-builder)
+  - [Auto-Generate Teams](#auto-generate-teams)
 - [Trade Finder Tab](#trade-finder-tab)
 - [Contract Value Tab](#contract-value-tab)
 - [Platoon Finder Tab](#platoon-finder-tab)
@@ -300,6 +302,34 @@ The Roster Builder Sandbox allows you to build hypothetical rosters by selecting
 3. Double-click a player to add them to your roster
 4. View team summary and position grades on the right
 5. Click "Clear Roster" to start over
+
+### Auto-Generate Teams
+
+The Roster Builder includes an auto-generate feature that builds complete rosters using weighted randomness - each generation produces a different, plausible team.
+
+**Specification Options:**
+
+| Option | Choices | Description |
+|--------|---------|-------------|
+| **Competitive Level** | Contender / Middle of the pack / Rebuilding | Contender favors high OVR, Middle of the pack uses balanced weights, Rebuilding favors youth and upside |
+| **Salary Tier** | Big spender / Mid-market / Budget | Controls salary preferences for player selection |
+| **Team Identity** | Any / Power-focused / Speed-focused / Pitching-focused / Youth-focused / Budget-focused / OBP-focused | Boosts players matching the selected archetype |
+
+**How It Works:**
+- Click "🎲 Generate!" to create a randomized team based on your preferences
+- Clicking again with the same settings produces a **different** team each time
+- Uses weighted random selection with guardrails to keep rosters realistic
+- Fills all roster slots: 9 lineup positions, 4 bench spots, 5-man rotation, and 7-man bullpen
+- Players matching your selected identity/archetype receive higher selection weights
+
+**Example UI Dropdowns:**
+```
+Competitive Level: [Contender ▼]
+Salary Tier:       [Mid-market ▼]
+Team Identity:     [Power-focused ▼]
+
+[🎲 Generate!]  [Clear Roster]
+```
 
 ---
 
