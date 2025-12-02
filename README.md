@@ -235,7 +235,7 @@ Hector can ingest the following statistics from your OOTP HTML export:
 |------|-------------|
 | YL | Years left on contract |
 | SLR | Salary |
-| SctAcc | Scout accuracy
+| SctAcc | Scout accuracy |
 
 ---
 
