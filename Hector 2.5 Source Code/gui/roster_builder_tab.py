@@ -48,6 +48,94 @@ def add_roster_builder_tab(notebook, font):
     clear_btn = ttk.Button(header_frame, text="Clear Roster", command=lambda: clear_roster())
     clear_btn.pack(side="right", padx=5)
     
+    # Auto-Generate Section
+    auto_gen_frame = tk.Frame(roster_frame, bg="#2a2a2a", relief="raised", bd=1)
+    auto_gen_frame.pack(fill="x", padx=10, pady=(5, 0))
+    
+    tk.Label(
+        auto_gen_frame,
+        text="🎲 Auto-Generate",
+        font=(font[0], font[1], "bold"),
+        bg="#2a2a2a",
+        fg="#00ff7f"
+    ).pack(side="left", padx=10, pady=5)
+    
+    # Competitive Level dropdown
+    tk.Label(
+        auto_gen_frame,
+        text="Level:",
+        font=font,
+        bg="#2a2a2a",
+        fg="#d4d4d4"
+    ).pack(side="left", padx=(15, 5), pady=5)
+    
+    competitive_var = tk.StringVar(value="Middle of the pack")
+    competitive_combo = ttk.Combobox(
+        auto_gen_frame,
+        textvariable=competitive_var,
+        values=["Contender", "Middle of the pack", "Rebuilding"],
+        state="readonly",
+        width=16
+    )
+    competitive_combo.pack(side="left", padx=5, pady=5)
+    
+    # Salary Tier dropdown
+    tk.Label(
+        auto_gen_frame,
+        text="Salary:",
+        font=font,
+        bg="#2a2a2a",
+        fg="#d4d4d4"
+    ).pack(side="left", padx=(15, 5), pady=5)
+    
+    salary_var = tk.StringVar(value="Mid-market")
+    salary_combo = ttk.Combobox(
+        auto_gen_frame,
+        textvariable=salary_var,
+        values=["Big spender", "Mid-market", "Budget"],
+        state="readonly",
+        width=12
+    )
+    salary_combo.pack(side="left", padx=5, pady=5)
+    
+    # Team Identity dropdown
+    tk.Label(
+        auto_gen_frame,
+        text="Identity:",
+        font=font,
+        bg="#2a2a2a",
+        fg="#d4d4d4"
+    ).pack(side="left", padx=(15, 5), pady=5)
+    
+    identity_var = tk.StringVar(value="Any")
+    identity_combo = ttk.Combobox(
+        auto_gen_frame,
+        textvariable=identity_var,
+        values=["Any", "Power-focused", "Speed-focused", "Pitching-focused", 
+                "Youth-focused", "Budget-focused", "OBP-focused"],
+        state="readonly",
+        width=14
+    )
+    identity_combo.pack(side="left", padx=5, pady=5)
+    
+    # Generate button
+    def do_auto_generate():
+        """Execute auto-generate with current settings"""
+        roster_builder.auto_generate_roster(
+            competitive_level=competitive_var.get(),
+            salary_tier=salary_var.get(),
+            identity=identity_var.get()
+        )
+        update_roster_display()
+        update_pool_table()
+    
+    generate_btn = ttk.Button(
+        auto_gen_frame, 
+        text="🎲 Generate!", 
+        command=do_auto_generate
+    )
+    generate_btn.pack(side="left", padx=15, pady=5)
+    
     # Main layout - 3 columns
     main_container = tk.Frame(roster_frame, bg="#1e1e1e")
     main_container.pack(fill="both", expand=True, padx=5, pady=5)

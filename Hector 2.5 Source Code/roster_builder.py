@@ -1,6 +1,8 @@
 # Roster Builder Logic
 # Handles roster building logic, grades, summaries, and archetype detection
 
+import random
+
 from trade_value import parse_number, parse_salary, parse_years_left
 from archetypes import get_best_archetype, ARCHETYPES
 from player_utils import parse_star_rating, get_age, get_war, normalize_rating, STAR_TO_RATING_SCALE
@@ -34,6 +36,14 @@ GRADE_THRESHOLDS = {
     "D": {"min": 50, "color": "#ff6b6b"},   # Below average
     "F": {"min": 0, "color": "#c92a2a"},    # Major weakness
 }
+
+# Auto-generate weight multipliers
+ARCHETYPE_MATCH_WEIGHT_MULTIPLIER = 1.8  # Weight boost for matching archetype
+ARCHETYPE_GOOD_FIT_MULTIPLIER = 1.2      # Weight boost for good archetype fit
+MINIMUM_SELECTION_WEIGHT = 0.1           # Floor weight to allow surprises
+
+# Bench positions for auto-generate (utility-focused)
+BENCH_POSITIONS = ["C", "1B", "2B", "SS", "LF", "CF", "RF"]
 
 
 def get_grade_for_ovr(ovr, league_avg=55):
@@ -388,6 +398,258 @@ class RosterBuilder:
         for name in data.get("bullpen", []):
             if name and name in pitcher_lookup:
                 self.bullpen.append(pitcher_lookup[name])
+    
+    def auto_generate_roster(self, competitive_level="Middle of the pack", 
+                              salary_tier="Mid-market", identity="Any"):
+        """
+        Auto-generate a complete roster using weighted random selection.
+        
+        Args:
+            competitive_level: "Contender", "Middle of the pack", or "Rebuilding"
+            salary_tier: "Big spender", "Mid-market", or "Budget"
+            identity: "Any", "Power-focused", "Speed-focused", "Pitching-focused", 
+                     or archetype keys like "mashers", "speed_defense", etc.
+        
+        Each call produces a different roster due to weighted randomness.
+        """
+        self.clear_roster()
+        
+        # Track used players to avoid duplicates
+        used_players = set()
+        
+        # Fill lineup positions
+        for pos in LINEUP_SLOTS:
+            candidates = self._get_position_candidates(pos, 10, "batter", used_players)
+            if candidates:
+                weights = self._calculate_weights(candidates, competitive_level, 
+                                                   salary_tier, identity, "batter")
+                selected = random.choices(candidates, weights=weights, k=1)[0]
+                self.add_to_lineup(selected, pos)
+                used_players.add(selected.get("Name", ""))
+        
+        # Fill rotation
+        self._fill_rotation_random(competitive_level, salary_tier, identity, used_players)
+        
+        # Fill bullpen
+        self._fill_bullpen_random(competitive_level, salary_tier, identity, used_players)
+        
+        # Fill bench
+        self._fill_bench_random(competitive_level, salary_tier, identity, used_players)
+    
+    def _get_position_candidates(self, position, count, player_type, used_players):
+        """
+        Get top N candidate players for a position, excluding already used players.
+        
+        Args:
+            position: Position to find candidates for (C, 1B, SP, RP, etc.)
+            count: Number of candidates to return
+            player_type: "batter" or "pitcher"
+            used_players: Set of player names already on roster
+        
+        Returns:
+            List of player dicts sorted by OVR
+        """
+        candidates = []
+        
+        if player_type == "pitcher":
+            pool = self._all_pitchers
+        else:
+            pool = self._all_batters
+        
+        for player in pool:
+            # Skip already used players
+            if player.get("Name", "") in used_players:
+                continue
+            
+            player_pos = player.get("POS", "")
+            
+            # Match position
+            if position == "RP":
+                # RP slot accepts RP or CL
+                if player_pos not in ["RP", "CL"]:
+                    continue
+            elif position == "DH":
+                # DH can be any batter position
+                pass
+            else:
+                if player_pos != position:
+                    continue
+            
+            candidates.append(player)
+        
+        # Sort by OVR descending and return top N
+        candidates.sort(key=lambda p: parse_star_rating(p.get("OVR", "0")), reverse=True)
+        return candidates[:count]
+    
+    def _calculate_weights(self, candidates, competitive_level, salary_tier, 
+                           identity, player_type):
+        """
+        Calculate selection weights for candidate players.
+        
+        Weights are influenced by:
+        - Competitive level (favors high OVR for contenders, youth for rebuilding)
+        - Salary tier (favors budget contracts or allows premium spending)
+        - Identity (boosts players matching requested archetype)
+        
+        Returns:
+            List of weights corresponding to each candidate
+        """
+        weights = []
+        
+        for player in candidates:
+            weight = 1.0
+            
+            # Get player attributes
+            ovr = parse_star_rating(player.get("OVR", "0"))
+            ovr_normalized = normalize_rating(ovr)
+            pot = parse_star_rating(player.get("POT", "0"))
+            age = get_age(player)
+            salary = parse_salary(player.get("SLR", 0))
+            
+            # Competitive level adjustments
+            if competitive_level == "Contender":
+                # Favor high OVR players
+                if ovr_normalized >= 70:
+                    weight *= 2.0
+                elif ovr_normalized >= 65:
+                    weight *= 1.5
+                elif ovr_normalized >= 60:
+                    weight *= 1.2
+                elif ovr_normalized < 50:
+                    weight *= 0.5
+            elif competitive_level == "Rebuilding":
+                # Favor younger players with upside
+                if age <= 25:
+                    weight *= 1.8
+                elif age <= 27:
+                    weight *= 1.3
+                elif age >= 32:
+                    weight *= 0.5
+                # Favor high potential
+                pot_normalized = normalize_rating(pot)
+                if pot_normalized >= 70:
+                    weight *= 1.5
+                elif pot_normalized >= 60:
+                    weight *= 1.2
+            # "Middle of the pack" uses balanced weights (no major adjustments)
+            
+            # Salary tier adjustments
+            if salary_tier == "Budget":
+                # Reduce weight for high-salary players
+                if salary >= 25:
+                    weight *= 0.3
+                elif salary >= 15:
+                    weight *= 0.5
+                elif salary >= 8:
+                    weight *= 0.7
+                elif salary <= 1:
+                    weight *= 1.5
+            elif salary_tier == "Big spender":
+                # Slight boost for star players (who tend to be expensive)
+                if ovr_normalized >= 70:
+                    weight *= 1.3
+                elif ovr_normalized >= 65:
+                    weight *= 1.1
+            # "Mid-market" uses balanced approach (no major salary adjustments)
+            
+            # Identity/archetype adjustments
+            if identity and identity not in ["Any", "Balanced"]:
+                archetype_key = self._map_identity_to_archetype(identity)
+                if archetype_key:
+                    best = get_best_archetype(player, player_type)
+                    if best and best["archetype"] == archetype_key:
+                        # Strong boost for matching archetype
+                        weight *= ARCHETYPE_MATCH_WEIGHT_MULTIPLIER
+                    elif best and best["score"] >= 60:
+                        # Moderate boost for good archetype fit (any archetype)
+                        weight *= ARCHETYPE_GOOD_FIT_MULTIPLIER
+            
+            # Ensure minimum weight (allow surprises)
+            weight = max(MINIMUM_SELECTION_WEIGHT, weight)
+            weights.append(weight)
+        
+        return weights
+    
+    def _map_identity_to_archetype(self, identity):
+        """Map user-friendly identity names to archetype keys."""
+        identity_map = {
+            "Power-focused": "mashers",
+            "Speed-focused": "speed_defense",
+            "Pitching-focused": "win_now",  # Pitching focus uses win_now for quality
+            "Youth-focused": "youth_movement",
+            "Budget-focused": "budget_build",
+            "OBP-focused": "moneyball",
+            # Direct archetype keys also work
+            "mashers": "mashers",
+            "speed_defense": "speed_defense",
+            "moneyball": "moneyball",
+            "youth_movement": "youth_movement",
+            "win_now": "win_now",
+            "budget_build": "budget_build",
+            "balanced": "balanced",
+        }
+        return identity_map.get(identity, None)
+    
+    def _fill_rotation_random(self, competitive_level, salary_tier, identity, used_players):
+        """Fill rotation slots with weighted random selection."""
+        for _ in range(ROTATION_COUNT):
+            if len(self.rotation) >= ROTATION_COUNT:
+                break
+            
+            candidates = self._get_position_candidates("SP", 10, "pitcher", used_players)
+            if candidates:
+                weights = self._calculate_weights(candidates, competitive_level, 
+                                                   salary_tier, identity, "pitcher")
+                selected = random.choices(candidates, weights=weights, k=1)[0]
+                self.add_to_rotation(selected)
+                used_players.add(selected.get("Name", ""))
+    
+    def _fill_bullpen_random(self, competitive_level, salary_tier, identity, used_players):
+        """Fill bullpen slots with weighted random selection."""
+        for _ in range(BULLPEN_COUNT):
+            if len(self.bullpen) >= BULLPEN_COUNT:
+                break
+            
+            candidates = self._get_position_candidates("RP", 15, "pitcher", used_players)
+            if candidates:
+                weights = self._calculate_weights(candidates, competitive_level, 
+                                                   salary_tier, identity, "pitcher")
+                selected = random.choices(candidates, weights=weights, k=1)[0]
+                self.add_to_bullpen(selected)
+                used_players.add(selected.get("Name", ""))
+    
+    def _fill_bench_random(self, competitive_level, salary_tier, identity, used_players):
+        """Fill bench slots with weighted random selection, preferring versatile players."""
+        for i in range(BENCH_COUNT):
+            if len(self.bench) >= BENCH_COUNT:
+                break
+            
+            # Rotate through preferred bench positions
+            preferred_pos = BENCH_POSITIONS[i % len(BENCH_POSITIONS)]
+            
+            # Get candidates - for bench, be more flexible with positions
+            all_candidates = []
+            for pos in LINEUP_SLOTS:
+                if pos == "DH":
+                    continue  # Skip DH for bench
+                candidates = self._get_position_candidates(pos, 5, "batter", used_players)
+                all_candidates.extend(candidates)
+            
+            # Remove duplicates while preserving order
+            seen = set()
+            unique_candidates = []
+            for c in all_candidates:
+                name = c.get("Name", "")
+                if name not in seen:
+                    seen.add(name)
+                    unique_candidates.append(c)
+            
+            if unique_candidates:
+                weights = self._calculate_weights(unique_candidates, competitive_level, 
+                                                   salary_tier, identity, "batter")
+                selected = random.choices(unique_candidates, weights=weights, k=1)[0]
+                self.add_to_bench(selected)
+                used_players.add(selected.get("Name", ""))
 
 
 def calculate_trade_availability(player, player_type="batter"):
