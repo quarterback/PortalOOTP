@@ -356,6 +356,16 @@ BUTTON_TOOLTIPS = {
         "Potential ratings are weighted 1.5x and current ratings are weighted 0.9x.\n"
         "Useful for evaluating prospects and draft candidates where future development matters more than current ability."
     ),
+    "stats_based_scoring": (
+        "Use Stats-Based Scoring:\n"
+        "When enabled, calculates player value from actual performance stats instead of ratings.\n\n"
+        "For Batters: Uses wRC+, WAR, OPS+, and G (games played).\n"
+        "For Pitchers: Uses WAR, ERA+, rWAR, HLD, and IP.\n\n"
+        "Automatic Fallback:\n"
+        "• Batters with < 50 games → uses ratings only\n"
+        "• Pitchers with < 20 IP → uses ratings only\n\n"
+        "Configure weights in batter_stat_weights.py and pitcher_stat_weights.py"
+    ),
 }
 
 def add_button_tooltip(widget, key):

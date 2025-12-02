@@ -3,8 +3,77 @@ import importlib.util
 from pathlib import Path 
 
 
+def parse_stat_value(val):
+    """Parse a stat value from HTML export, handling various formats"""
+    if val is None:
+        return 0.0
+    val = str(val).strip()
+    if val == "-" or val == "" or val == " ":
+        return 0.0
+    # Remove commas from numbers like "1,234"
+    val = val.replace(",", "")
+    try:
+        return float(val)
+    except ValueError:
+        return 0.0
 
-def calculate_score(player, section_weights):
+
+def calculate_pitcher_stat_score(player, stat_weights_module):
+    """
+    Calculate pitcher score based on actual stats instead of ratings.
+    Returns stat-based score and whether stats were used (has sufficient sample size).
+    """
+    stat_weights = stat_weights_module.stat_weights
+    normalization = stat_weights_module.normalization
+    min_ip = getattr(stat_weights_module, 'MIN_INNINGS_PITCHED', 20)
+    
+    # Check sample size - use IP (innings pitched)
+    ip = parse_stat_value(player.get("IP", 0))
+    has_sufficient_sample = ip >= min_ip
+    
+    if not has_sufficient_sample:
+        return None, False
+    
+    stat_score = 0.0
+    pos = player.get("POS", "").upper()
+    
+    for stat_name, config in stat_weights.items():
+        if stat_name == "age_adjustment":
+            continue  # Skip meta configuration
+            
+        weight = config.get("weight", 0)
+        if weight == 0:
+            continue
+        
+        # Check if this stat applies only to certain positions
+        applies_to = config.get("applies_to", None)
+        if applies_to is not None and pos not in applies_to:
+            continue
+            
+        raw_value = parse_stat_value(player.get(stat_name, 0))
+        
+        # Apply scale factor if present
+        scale_factor = config.get("scale_factor", 1.0)
+        raw_value *= scale_factor
+        
+        # Normalize if normalization config exists
+        if stat_name in normalization:
+            norm = normalization[stat_name]
+            min_val = norm.get("min", 0)
+            max_val = norm.get("max", 100)
+            scale_to = norm.get("scale_to", 100)
+            
+            # Clamp and normalize
+            clamped = max(min_val, min(max_val, raw_value))
+            normalized = ((clamped - min_val) / (max_val - min_val)) * scale_to
+            stat_score += normalized * weight
+        else:
+            stat_score += raw_value * weight
+    
+    return round(stat_score, 2), True
+
+
+def calculate_score(player, section_weights, use_stats=False, stat_weights_module=None):
     total_core = 0
     total_core_potential = 0
     total_pitch_arsenal = 0
@@ -106,11 +175,23 @@ def calculate_score(player, section_weights):
     total_other += penalties * meta_penalties
     total_potential = total_pitch_potential + total_core_potential
     total_score = total_core + total_potential + total_pitch_arsenal + total_other
+    
+    # Calculate stat-based score if enabled and module provided
+    stat_score = None
+    used_stats = False
+    if use_stats and stat_weights_module is not None:
+        stat_score, used_stats = calculate_pitcher_stat_score(player, stat_weights_module)
+        if used_stats and stat_score is not None:
+            # Use stat score as the total when stats are available
+            total_score = stat_score
+    
     return {
         'total': round(total_score, 2),
         'pitches': round(total_pitch_arsenal, 2),
         'pitches_potential': round(total_pitch_potential, 2),
         'core_potential': round(total_core_potential, 2),
-        'curr_total': round(total_core + total_pitch_arsenal + total_other, 2)
+        'curr_total': round(total_core + total_pitch_arsenal + total_other, 2),
+        'stat_score': stat_score,  # None if not calculated or insufficient sample
+        'used_stats': used_stats   # True if stat-based scoring was used
     }
 # No file loader needed!

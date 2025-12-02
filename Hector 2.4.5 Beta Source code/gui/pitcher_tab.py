@@ -44,6 +44,26 @@ def add_pitcher_tab(notebook, font):
     draft_toggle.pack(anchor="w")
     add_button_tooltip(draft_toggle, "draft_comparison_mode")
     
+    # Stats-Based Scoring Toggle
+    stats_mode_var = tk.BooleanVar(value=False)
+    stats_toggle_frame = tk.Frame(filter_frame, bg="#1e1e1e")
+    stats_toggle_frame.pack(fill="x", padx=0, pady=(2, 8))
+    
+    stats_toggle = tk.Checkbutton(
+        stats_toggle_frame,
+        text="Use Stats-Based Scoring",
+        variable=stats_mode_var,
+        bg="#1e1e1e",
+        fg="#d4d4d4",
+        selectcolor="#1e1e1e",
+        activebackground="#1e1e1e",
+        activeforeground="#00ff7f",
+        highlightthickness=0,
+        font=(font[0], font[1], "bold")
+    )
+    stats_toggle.pack(anchor="w")
+    add_button_tooltip(stats_toggle, "stats_based_scoring")
+    
     filter_label = tk.Label(
         filter_frame,
         text="Filter by Position",
@@ -178,6 +198,7 @@ def add_pitcher_tab(notebook, font):
     table.tag_configure("hover", background="#333")
     table.tag_configure("rp_sp_potential", background="#384574")
     table.tag_configure("pos_sep", background="#384574", font=(font[0], font[1], "bold"))
+    table.tag_configure("stats_used", foreground="#00ff7f")  # Green for stats-based scoring
 
     table._prev_hover = None
     table.bind("<Motion>", on_treeview_motion)
@@ -205,14 +226,26 @@ def add_pitcher_tab(notebook, font):
         sys.modules["pitcher_weights"] = weights_module
         return weights_module
     
+    def get_stat_weights_module():
+        """Get pitcher stat weights module for stats-based scoring"""
+        from .core import get_weights_dir
+        weights_path = get_weights_dir() / "pitcher_stat_weights.py"
+        if "pitcher_stat_weights" in sys.modules:
+            del sys.modules["pitcher_stat_weights"]  # Always reload to get fresh values
+        spec = importlib.util.spec_from_file_location("pitcher_stat_weights", str(weights_path))
+        stat_weights_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(stat_weights_module)
+        sys.modules["pitcher_stat_weights"] = stat_weights_module
+        return stat_weights_module
+    
     # Store original meta values
     original_meta_values = {
         "core_attributes": None,
         "core_potentials": None
     }
     
-    def recalculate_scores_with_draft_mode():
-        """Recalculate all pitcher scores with draft mode weights"""
+    def recalculate_scores_with_modes():
+        """Recalculate all pitcher scores with draft mode and stats mode"""
         weights_module = get_weights_module()
         weights = weights_module.section_weights
         
@@ -230,9 +263,23 @@ def add_pitcher_tab(notebook, font):
             weights["meta"]["core_potentials"] = original_meta_values["core_potentials"]
             weights["meta"]["core_attributes"] = original_meta_values["core_attributes"]
         
+        # Get stat weights module if stats mode is enabled
+        stat_weights_module = None
+        use_stats = stats_mode_var.get()
+        if use_stats:
+            try:
+                stat_weights_module = get_stat_weights_module()
+            except Exception as e:
+                print(f"Warning: Could not load stat weights: {e}")
+                use_stats = False
+        
         # Recalculate all pitcher scores
         for pitcher in add_pitcher_tab.CURRENT_PITCHERS:
-            pitcher['Scores'] = calculate_score(pitcher, weights)
+            pitcher['Scores'] = calculate_score(
+                pitcher, weights,
+                use_stats=use_stats,
+                stat_weights_module=stat_weights_module
+            )
         
         # Re-sort by new total scores
         add_pitcher_tab.CURRENT_PITCHERS.sort(
@@ -248,9 +295,15 @@ def add_pitcher_tab(notebook, font):
     def on_draft_mode_toggle(*args):
         """Callback when draft mode toggle changes"""
         if add_pitcher_tab.CURRENT_PITCHERS:  # Only recalculate if we have players
-            recalculate_scores_with_draft_mode()
+            recalculate_scores_with_modes()
+    
+    def on_stats_mode_toggle(*args):
+        """Callback when stats mode toggle changes"""
+        if add_pitcher_tab.CURRENT_PITCHERS:  # Only recalculate if we have players
+            recalculate_scores_with_modes()
     
     draft_mode_var.trace("w", on_draft_mode_toggle)
+    stats_mode_var.trace("w", on_stats_mode_toggle)
 
     def get_filtered_pitchers():
         allowed_positions = [p for p, v in pos_vars.items() if v.get()]
@@ -380,6 +433,6 @@ def add_pitcher_tab(notebook, font):
             
             # Store pitchers and recalculate with current mode
             add_pitcher_tab.CURRENT_PITCHERS = list(pitchers)
-            recalculate_scores_with_draft_mode()
+            recalculate_scores_with_modes()
 
     return PitcherTab()
