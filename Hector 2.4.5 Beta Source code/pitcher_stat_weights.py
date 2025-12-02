@@ -31,12 +31,14 @@ stat_weights = {
     },
     
     # Context - Reliever specific
+    # Note: Stats with "applies_to" only affect scoring for those positions.
+    # This allows position-specific weighting, e.g., Holds only matter for relievers.
     "HLD": {
         "weight": 0.05,
         "description": "Holds - reliever value indicator",
         "baseline": 0,
         "higher_is_better": True,
-        "applies_to": ["RP", "CL"]  # Only for relievers
+        "applies_to": ["RP", "CL"]  # Only for relievers - starters don't accumulate holds
     },
     
     # Volume indicator

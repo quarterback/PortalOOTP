@@ -10,9 +10,21 @@ from .tooltips import add_button_tooltip
 player_url_template = load_player_url_template()
 
 # Age definitions for trade matching
+# These thresholds align with typical MLB trade deadline evaluations:
+# - Prospects (≤25): Young players still developing, valued for future potential
+# - Tweeners (26): Players in transition, evaluate case-by-case
+# - Veterans (≥27): Established players, valued primarily for current production
 PROSPECT_MAX_AGE = 25
 VETERAN_MIN_AGE = 27
+
+# Minimum potential gap to identify high-upside prospects
+# A gap of 15+ (e.g., 3.5 OVR vs 5.0 POT) indicates significant upside
 POTENTIAL_GAP_THRESHOLD = 15
+
+# Display thresholds for highlighting high-value entries
+HIGH_VALUE_WAR_THRESHOLD = 2.0  # WAR threshold for highlighting veterans
+HIGH_POTENTIAL_GAP_THRESHOLD = 2.0  # Star gap threshold for highlighting prospects
+
 
 def parse_number(value):
     """Parse numeric value, handling '-' and empty strings"""
@@ -426,7 +438,7 @@ def add_trade_finder_tab(notebook, font):
         
         for vet in veterans:
             tags = []
-            if vet["war"] >= 2.0:
+            if vet["war"] >= HIGH_VALUE_WAR_THRESHOLD:
                 tags.append("high_value")
             
             values = (
@@ -456,7 +468,7 @@ def add_trade_finder_tab(notebook, font):
         
         for pros in prospects:
             tags = []
-            if pros["gap"] >= 2.0:  # 2+ star gap
+            if pros["gap"] >= HIGH_POTENTIAL_GAP_THRESHOLD:
                 tags.append("high_potential")
             
             values = (
