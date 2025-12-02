@@ -510,8 +510,8 @@ def find_trade_targets_by_position(batters, pitchers, position, min_ovr=None, ma
         
         # Apply filters
         if min_ovr is not None:
-            # Normalize for comparison
-            compare_ovr = ovr if ovr > 10 else ovr * 16
+            # Normalize for comparison using shared utility
+            compare_ovr = normalize_rating(ovr)
             if compare_ovr < min_ovr:
                 continue
         

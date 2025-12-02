@@ -2,7 +2,10 @@
 # Detects overlooked players who deserve a second look
 
 from trade_value import parse_number, parse_salary, parse_years_left
-from player_utils import parse_star_rating, get_age, get_war, is_star_scale
+from player_utils import (
+    parse_star_rating, get_age, get_war, is_star_scale, 
+    RATING_SCALE_THRESHOLD
+)
 
 
 # Thresholds for determining upside in late bloomers
@@ -56,7 +59,8 @@ HIDDEN_GEM_CATEGORIES = {
 def find_aaaa_players(batters, pitchers):
     """
     Find AAAA Players:
-    - OVR 45-55 (solid but not star)
+    - OVR 45-55 (solid but not star) on 20-80 scale
+    - OVR 2.5-3.5 on star scale
     - Good stats (wRC+ ≥ 100 or ERA+ ≥ 100)
     - Not necessarily starting (might be blocked)
     - Could start elsewhere
@@ -68,11 +72,11 @@ def find_aaaa_players(batters, pitchers):
         ovr = parse_star_rating(batter.get("OVR", "0"))
         
         # Check if OVR is in range (handle both 20-80 scale and star scale)
-        if ovr > 10:  # 20-80 scale
-            if not (45 <= ovr <= 55):
-                continue
-        else:  # Star scale (1-5)
+        if is_star_scale(ovr):  # Star scale (1-5)
             if not (2.5 <= ovr <= 3.5):
+                continue
+        else:  # 20-80 scale
+            if not (45 <= ovr <= 55):
                 continue
         
         wrc_plus = parse_number(batter.get("wRC+", 0))
@@ -101,11 +105,11 @@ def find_aaaa_players(batters, pitchers):
         ovr = parse_star_rating(pitcher.get("OVR", "0"))
         
         # Check if OVR is in range
-        if ovr > 10:  # 20-80 scale
-            if not (45 <= ovr <= 55):
-                continue
-        else:  # Star scale (1-5)
+        if is_star_scale(ovr):  # Star scale (1-5)
             if not (2.5 <= ovr <= 3.5):
+                continue
+        else:  # 20-80 scale
+            if not (45 <= ovr <= 55):
                 continue
         
         era_plus = parse_number(pitcher.get("ERA+", 0))
@@ -136,7 +140,8 @@ def find_late_bloomers(batters, pitchers):
     Find Late Bloomers:
     - Age 26-28
     - OVR increased (current OVR close to POT)
-    - Still has upside (POT - OVR ≥ 5 on 20-80 scale, or ≥ 0.5 on star scale)
+    - Still has upside (POT - OVR ≥ UPSIDE_GAP_THRESHOLD_20_80 on 20-80 scale, 
+      or ≥ UPSIDE_GAP_THRESHOLD_STAR on star scale)
     - Good current stats
     """
     results = []

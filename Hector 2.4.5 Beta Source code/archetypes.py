@@ -2,7 +2,7 @@
 # Filter and find players that fit desired team-building philosophies
 
 from trade_value import parse_number, parse_salary, parse_years_left
-from player_utils import parse_star_rating, get_age, get_war
+from player_utils import parse_star_rating, get_age, get_war, is_star_scale
 
 
 # Archetype Definitions
@@ -299,16 +299,7 @@ def calculate_youth_movement_fit(player, player_type="batter"):
     pot = parse_star_rating(player.get("POT", "0"))
     ovr = parse_star_rating(player.get("OVR", "0"))
     
-    if pot > 10:  # 20-80 scale
-        if pot >= 70:
-            score += 30
-        elif pot >= 60:
-            score += 24
-        elif pot >= 55:
-            score += 18
-        elif pot >= 50:
-            score += 10
-    else:  # Star scale
+    if is_star_scale(pot):  # Star scale
         if pot >= 4.5:
             score += 30
         elif pot >= 4.0:
@@ -317,22 +308,31 @@ def calculate_youth_movement_fit(player, player_type="batter"):
             score += 18
         elif pot >= 3.0:
             score += 10
+    else:  # 20-80 scale
+        if pot >= 70:
+            score += 30
+        elif pot >= 60:
+            score += 24
+        elif pot >= 55:
+            score += 18
+        elif pot >= 50:
+            score += 10
     
     # Upside gap (25 points)
     gap = pot - ovr
-    if pot > 10:  # 20-80 scale
-        if gap >= 15:
-            score += 25
-        elif gap >= 10:
-            score += 20
-        elif gap >= 5:
-            score += 12
-    else:  # Star scale
+    if is_star_scale(pot):  # Star scale
         if gap >= 1.5:
             score += 25
         elif gap >= 1.0:
             score += 20
         elif gap >= 0.5:
+            score += 12
+    else:  # 20-80 scale
+        if gap >= 15:
+            score += 25
+        elif gap >= 10:
+            score += 20
+        elif gap >= 5:
             score += 12
     
     # Contract (15 points)
@@ -376,16 +376,7 @@ def calculate_win_now_fit(player, player_type="batter"):
     
     # OVR (35 points)
     ovr = parse_star_rating(player.get("OVR", "0"))
-    if ovr > 10:  # 20-80 scale
-        if ovr >= 75:
-            score += 35
-        elif ovr >= 70:
-            score += 30
-        elif ovr >= 65:
-            score += 25
-        elif ovr >= 60:
-            score += 15
-    else:  # Star scale
+    if is_star_scale(ovr):  # Star scale
         if ovr >= 4.5:
             score += 35
         elif ovr >= 4.0:
@@ -393,6 +384,15 @@ def calculate_win_now_fit(player, player_type="batter"):
         elif ovr >= 3.5:
             score += 25
         elif ovr >= 3.0:
+            score += 15
+    else:  # 20-80 scale
+        if ovr >= 75:
+            score += 35
+        elif ovr >= 70:
+            score += 30
+        elif ovr >= 65:
+            score += 25
+        elif ovr >= 60:
             score += 15
     
     # Current production (45 points)
