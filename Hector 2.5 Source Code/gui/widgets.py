@@ -409,8 +409,7 @@ def bind_player_card_right_click(table, id_map, player_lookup, player_type_func=
         root = table.winfo_toplevel()
         show_player_card(root, player, player_type)
     
-    # Bind right-click for Windows/Linux and macOS
-    table.bind("<Button-3>", on_right_click)  # Windows/Linux
-    table.bind("<Button-2>", on_right_click)  # macOS
-    # Also add Control+Click as alternative for cross-platform consistency
+    # Bind right-click - Button-3 works on Windows/Linux/macOS
+    table.bind("<Button-3>", on_right_click)
+    # Control+Click as alternative for macOS users without a right-click mouse
     table.bind("<Control-Button-1>", on_right_click)
