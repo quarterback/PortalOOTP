@@ -438,3 +438,339 @@ def find_trade_candidates(players, teams_data, player_type="batter"):
     # Sort by trade fit descending
     candidates.sort(key=lambda x: x["trade_fit"], reverse=True)
     return candidates
+
+
+# Trade value calculation constants
+TRADE_GRADE_THRESHOLDS = {
+    "A+": 0.30,   # Gain 30%+ value
+    "A": 0.15,    # Gain 15-30%
+    "B": 0.15,    # Within ±15% (fair trade)
+    "C": -0.15,   # Lose 15-30%
+    "D": -0.30,   # Lose 30-50%
+    "F": -0.50,   # Lose 50%+
+}
+
+
+def calculate_comprehensive_trade_value(player, teams_data, player_type="batter"):
+    """
+    Calculate comprehensive trade value for a player.
+    
+    Trade Value = base_surplus_value + park_adjustment_bonus + age_adjustment + contract_value
+    
+    Args:
+        player: Player dict
+        teams_data: Dict mapping team abbr to team data with park factors
+        player_type: "batter" or "pitcher"
+    
+    Returns:
+        Dict with detailed trade value breakdown:
+        {
+            "total_trade_value": 85.5,
+            "base_surplus_value": 12.0,
+            "park_adjustment_bonus": 3.5,
+            "age_adjustment": 5.0,
+            "contract_value": 8.0,
+            "is_hidden_gem": True,
+            "trade_grade_modifier": 0.0,
+        }
+    """
+    from trade_value import parse_years_left
+    
+    team_abbr = player.get("ORG", player.get("TM", ""))
+    team_info = teams_data.get(team_abbr, {})
+    
+    # Get player stats
+    if player_type == "pitcher":
+        war = parse_number(player.get("WAR (Pitcher)", player.get("WAR", 0)))
+    else:
+        war = parse_number(player.get("WAR (Batter)", player.get("WAR", 0)))
+    
+    salary = parse_salary(player.get("SLR", 0))
+    
+    # 1. Base surplus value (WAR-based)
+    base_surplus = calculate_surplus_value(war, salary)
+    
+    # 2. Park adjustment bonus
+    park_bonus = 0.0
+    is_hidden_gem = False
+    
+    if team_info:
+        pf_overall = team_info.get("PF", 1.0)
+        pf_hr = team_info.get("PF HR", 1.0)
+        
+        if not isinstance(pf_overall, (int, float)) or pf_overall <= 0:
+            pf_overall = 1.0
+        if not isinstance(pf_hr, (int, float)) or pf_hr <= 0:
+            pf_hr = 1.0
+        
+        if player_type == "batter":
+            # Batters in pitcher parks get bonus
+            if pf_overall < 0.95 or pf_hr < 0.90:
+                # Calculate bonus based on how suppressive the park is
+                suppression = (1.0 - pf_overall) + (1.0 - pf_hr) / 2
+                park_bonus = suppression * 5.0  # Up to ~5M bonus
+                
+                # Check hidden gem criteria
+                power = parse_number(player.get("POW", 0))
+                contact = parse_number(player.get("CON", 0))
+                if power >= 50 or contact >= 55:
+                    is_hidden_gem = True
+        else:
+            # Pitchers in hitter parks get bonus
+            if pf_overall > 1.05 or pf_hr > 1.10:
+                # Calculate bonus based on how inflating the park is
+                inflation = (pf_overall - 1.0) + (pf_hr - 1.0) / 2
+                park_bonus = inflation * 5.0  # Up to ~5M bonus
+                
+                # Check hidden gem criteria
+                stuff = parse_number(player.get("STU", 0))
+                movement = parse_number(player.get("MOV", 0))
+                if stuff >= 50 or movement >= 55:
+                    is_hidden_gem = True
+    
+    # 3. Age adjustment
+    try:
+        age = int(player.get("Age", 30))
+    except (ValueError, TypeError):
+        age = 30
+    
+    if age <= 23:
+        age_adjustment = 8.0
+    elif age <= 25:
+        age_adjustment = 5.0
+    elif age <= 27:
+        age_adjustment = 2.0
+    elif age <= 29:
+        age_adjustment = 0.0
+    elif age <= 32:
+        age_adjustment = -3.0
+    else:
+        age_adjustment = -6.0
+    
+    # 4. Contract value (years of control, salary efficiency)
+    yl_data = parse_years_left(player.get("YL", ""))
+    years_left = yl_data.get("years", 0)
+    status = yl_data.get("status", "unknown")
+    
+    contract_value = 0.0
+    
+    # Years of control bonus
+    if status == "pre_arb":
+        contract_value += years_left * 3.0  # Pre-arb years very valuable
+    elif status == "arbitration":
+        contract_value += years_left * 2.0  # Arb years still valuable
+    else:
+        contract_value += years_left * 1.0  # Signed years
+    
+    # Salary efficiency bonus (low salary = more valuable)
+    if salary < 1.0:
+        contract_value += 4.0
+    elif salary < 5.0:
+        contract_value += 2.0
+    elif salary > 20.0:
+        contract_value -= 3.0
+    elif salary > 15.0:
+        contract_value -= 1.0
+    
+    # Calculate total trade value (normalize to 0-100 scale)
+    raw_total = base_surplus + park_bonus + age_adjustment + contract_value
+    
+    # Normalize: surplus typically ranges from -20 to +30, map to 0-100
+    normalized_total = max(0, min(100, 50 + raw_total * 1.5))
+    
+    return {
+        "total_trade_value": round(normalized_total, 1),
+        "base_surplus_value": round(base_surplus, 1),
+        "park_adjustment_bonus": round(park_bonus, 1),
+        "age_adjustment": round(age_adjustment, 1),
+        "contract_value": round(contract_value, 1),
+        "is_hidden_gem": is_hidden_gem,
+        "raw_total": round(raw_total, 1),
+    }
+
+
+def calculate_trade_grade(offered_value, received_value):
+    """
+    Calculate trade grade based on value differential.
+    
+    Args:
+        offered_value: Total value of players you're trading away
+        received_value: Total value of players you're receiving
+    
+    Returns:
+        Dict with grade info:
+        {
+            "grade": "A",
+            "differential": 0.25,
+            "differential_pct": "+25%",
+            "description": "You gain 15-30% value"
+        }
+    """
+    if offered_value <= 0:
+        offered_value = 1  # Avoid division by zero
+    
+    differential = (received_value - offered_value) / offered_value
+    
+    # Determine grade
+    if differential >= 0.30:
+        grade = "A+"
+        description = "You gain 30%+ value - Excellent trade!"
+        color = "#51cf66"  # Green
+    elif differential >= 0.15:
+        grade = "A"
+        description = "You gain 15-30% value - Great trade"
+        color = "#4dabf7"  # Blue
+    elif differential >= -0.15:
+        grade = "B"
+        description = "Roughly fair trade (±15%)"
+        color = "#ffd43b"  # Yellow
+    elif differential >= -0.30:
+        grade = "C"
+        description = "You lose 15-30% value"
+        color = "#ff922b"  # Orange
+    elif differential >= -0.50:
+        grade = "D"
+        description = "You lose 30-50% value"
+        color = "#ff6b6b"  # Red
+    else:
+        grade = "F"
+        description = "You lose 50%+ value - You got fleeced!"
+        color = "#e03131"  # Dark red
+    
+    # Format differential percentage
+    if differential >= 0:
+        diff_pct = f"+{differential*100:.0f}%"
+    else:
+        diff_pct = f"{differential*100:.0f}%"
+    
+    return {
+        "grade": grade,
+        "differential": round(differential, 3),
+        "differential_pct": diff_pct,
+        "description": description,
+        "color": color,
+    }
+
+
+def find_hidden_gem_trade_targets(players, teams_data, player_type="batter"):
+    """
+    Find hidden gem players who are undervalued due to park factors.
+    
+    Hidden Gem Criteria:
+    - Plays in extreme pitcher park (PF < 0.95 or PF HR < 0.90) for batters
+    - Plays in extreme hitter park (PF > 1.05 or PF HR > 1.10) for pitchers
+    - Has good raw power/contact/stuff being suppressed
+    - On a seller team (more likely available via trade)
+    - Good surplus value (underpaid relative to production)
+    
+    Args:
+        players: List of player dicts
+        teams_data: Dict mapping team abbr to team data
+        player_type: "batter" or "pitcher"
+    
+    Returns:
+        List of hidden gem candidates with park-adjusted upside info
+    """
+    hidden_gems = []
+    
+    for player in players:
+        team_abbr = player.get("ORG", player.get("TM", ""))
+        team_info = teams_data.get(team_abbr, {})
+        
+        if not team_info:
+            continue
+        
+        # Get park factors
+        pf_overall = team_info.get("PF", 1.0)
+        pf_hr = team_info.get("PF HR", 1.0)
+        
+        if not isinstance(pf_overall, (int, float)) or pf_overall <= 0:
+            pf_overall = 1.0
+        if not isinstance(pf_hr, (int, float)) or pf_hr <= 0:
+            pf_hr = 1.0
+        
+        is_hidden_gem = False
+        park_adjusted_upside = 0.0
+        upside_description = ""
+        
+        if player_type == "batter":
+            # Check for suppressive park
+            if pf_overall < 0.95 or pf_hr < 0.90:
+                power = parse_number(player.get("POW", 0))
+                contact = parse_number(player.get("CON", 0))
+                
+                if power >= 50 or contact >= 55:
+                    is_hidden_gem = True
+                    
+                    # Calculate park-adjusted upside
+                    power_upside = power * (1 / pf_hr) - power if pf_hr > 0 else 0
+                    contact_upside = contact * (1 / pf_overall) - contact if pf_overall > 0 else 0
+                    park_adjusted_upside = power_upside + contact_upside
+                    
+                    upside_description = f"+{power_upside:.1f} POW, +{contact_upside:.1f} CON in neutral park"
+        else:
+            # Check for inflating park
+            if pf_overall > 1.05 or pf_hr > 1.10:
+                stuff = parse_number(player.get("STU", 0))
+                movement = parse_number(player.get("MOV", 0))
+                
+                if stuff >= 50 or movement >= 55:
+                    is_hidden_gem = True
+                    
+                    # Calculate park-adjusted upside (stats look better in neutral park)
+                    stuff_upside = stuff * pf_overall - stuff
+                    movement_upside = movement * pf_overall - movement
+                    park_adjusted_upside = stuff_upside + movement_upside
+                    
+                    upside_description = f"+{stuff_upside:.1f} STU, +{movement_upside:.1f} MOV effective value"
+        
+        if not is_hidden_gem:
+            continue
+        
+        # Get additional info
+        if player_type == "pitcher":
+            war = parse_number(player.get("WAR (Pitcher)", player.get("WAR", 0)))
+        else:
+            war = parse_number(player.get("WAR (Batter)", player.get("WAR", 0)))
+        
+        salary = parse_salary(player.get("SLR", 0))
+        surplus = calculate_surplus_value(war, salary)
+        team_status = team_info.get("status", "neutral")
+        
+        try:
+            age = int(player.get("Age", 30))
+        except (ValueError, TypeError):
+            age = 30
+        
+        ovr = parse_star_rating(player.get("OVR", "0"))
+        
+        # Calculate gem score (how good of a hidden gem this is)
+        gem_score = 50  # Base
+        gem_score += min(25, park_adjusted_upside * 2)  # Park upside contribution
+        gem_score += min(15, surplus * 2)  # Surplus value contribution
+        if team_status == "seller":
+            gem_score += 10  # Availability bonus
+        if age <= 27:
+            gem_score += 10  # Youth bonus
+        
+        hidden_gems.append({
+            "player": player,
+            "name": player.get("Name", ""),
+            "pos": player.get("POS", ""),
+            "team": team_abbr,
+            "age": age,
+            "ovr": ovr,
+            "war": war,
+            "salary": salary,
+            "surplus_value": surplus,
+            "team_status": team_status,
+            "pf_overall": pf_overall,
+            "pf_hr": pf_hr,
+            "park_adjusted_upside": round(park_adjusted_upside, 1),
+            "upside_description": upside_description,
+            "gem_score": max(0, min(100, gem_score)),
+        })
+    
+    # Sort by gem score descending
+    hidden_gems.sort(key=lambda x: x["gem_score"], reverse=True)
+    return hidden_gems

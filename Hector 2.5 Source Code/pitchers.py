@@ -195,3 +195,182 @@ def calculate_score(player, section_weights, use_stats=False, stat_weights_modul
         'used_stats': used_stats   # True if stat-based scoring was used
     }
 # No file loader needed!
+
+
+def calculate_park_adjusted_pitcher_score(player, team_data):
+    """
+    Calculate park-adjusted pitching scores for a player.
+    
+    For pitchers in hitter-friendly parks (PF > 1), their raw stats are inflated.
+    We boost their adjusted score to account for pitching in a tough environment.
+    
+    Formula: adjusted_score = raw_score * park_factor
+    - Higher park factor = higher adjusted score (tougher environment)
+    - Lower park factor = lower adjusted score (easier environment)
+    
+    Args:
+        player: Player dict with pitching ratings
+        team_data: Team dict with park factor data (from teams_by_abbr)
+    
+    Returns:
+        Dict with raw and park-adjusted scores:
+        {
+            "stuff_raw": 65,
+            "stuff_adjusted": 71.5,  # Boosted for hitter park
+            "movement_raw": 55,
+            "movement_adjusted": 60.5,
+            "control_raw": 60,
+            "control_adjusted": 66.0,
+            "park_adjustment_bonus": 16.5,  # Total bonus from park adjustment
+            "pf": 1.10,  # Overall park factor used
+            "is_hidden_gem": True,  # Flag for extreme hitter parks
+        }
+    """
+    if not team_data:
+        # No team data available, return neutral adjustments
+        stuff_raw = parse_stat_value(player.get("STU", 0))
+        movement_raw = parse_stat_value(player.get("MOV", 0))
+        control_raw = parse_stat_value(player.get("CON", 0))
+        
+        return {
+            "stuff_raw": stuff_raw,
+            "stuff_adjusted": stuff_raw,
+            "movement_raw": movement_raw,
+            "movement_adjusted": movement_raw,
+            "control_raw": control_raw,
+            "control_adjusted": control_raw,
+            "park_adjustment_bonus": 0.0,
+            "pf": 1.0,
+            "pf_hr": 1.0,
+            "is_hidden_gem": False,
+        }
+    
+    # Get park factors
+    pf_overall = team_data.get("PF", 1.0)
+    pf_hr = team_data.get("PF HR", 1.0)
+    
+    # Ensure valid park factors (default to 1.0 if invalid)
+    if not isinstance(pf_overall, (int, float)) or pf_overall <= 0:
+        pf_overall = 1.0
+    if not isinstance(pf_hr, (int, float)) or pf_hr <= 0:
+        pf_hr = 1.0
+    
+    # Get raw pitching ratings
+    stuff_raw = parse_stat_value(player.get("STU", 0))
+    movement_raw = parse_stat_value(player.get("MOV", 0))
+    control_raw = parse_stat_value(player.get("CON", 0))
+    
+    # Calculate adjusted scores using park factor directly
+    # Higher park factor = tougher for pitchers = boost their adjusted score
+    stuff_adjusted = stuff_raw * pf_overall
+    movement_adjusted = movement_raw * pf_overall
+    control_adjusted = control_raw * pf_overall
+    
+    # Calculate total park adjustment bonus (sum of improvements)
+    stuff_bonus = stuff_adjusted - stuff_raw
+    movement_bonus = movement_adjusted - movement_raw
+    control_bonus = control_adjusted - control_raw
+    park_adjustment_bonus = stuff_bonus + movement_bonus + control_bonus
+    
+    # Determine if this is a hidden gem (extreme hitter park making stats look worse)
+    # Hidden gem criteria: PF > 1.05 or PF HR > 1.10, with good raw stuff
+    is_hidden_gem = (
+        (pf_overall > 1.05 or pf_hr > 1.10) and
+        (stuff_raw >= 50 or movement_raw >= 55)
+    )
+    
+    return {
+        "stuff_raw": round(stuff_raw, 1),
+        "stuff_adjusted": round(stuff_adjusted, 1),
+        "movement_raw": round(movement_raw, 1),
+        "movement_adjusted": round(movement_adjusted, 1),
+        "control_raw": round(control_raw, 1),
+        "control_adjusted": round(control_adjusted, 1),
+        "park_adjustment_bonus": round(park_adjustment_bonus, 1),
+        "pf": pf_overall,
+        "pf_hr": pf_hr,
+        "is_hidden_gem": is_hidden_gem,
+    }
+
+
+def get_pitcher_park_impact_preview(player, current_team_data, new_team_data):
+    """
+    Preview the impact of a pitcher moving to a new park.
+    
+    Shows projected stat changes when a pitcher moves between parks.
+    Example: "Player Y: -0.35 ERA projection in new park (Coors → Oracle)"
+    
+    Args:
+        player: Player dict with pitching ratings
+        current_team_data: Current team's park factor data
+        new_team_data: New team's park factor data
+    
+    Returns:
+        Dict with projected changes:
+        {
+            "era_change": -0.35,
+            "hr_allowed_change": -3,
+            "description": "-0.35 ERA projection, -3 HR allowed",
+            "impact_level": "significant"  # minimal, moderate, significant
+        }
+    """
+    # Get current and new park factors
+    current_pf = current_team_data.get("PF", 1.0) if current_team_data else 1.0
+    current_pf_hr = current_team_data.get("PF HR", 1.0) if current_team_data else 1.0
+    new_pf = new_team_data.get("PF", 1.0) if new_team_data else 1.0
+    new_pf_hr = new_team_data.get("PF HR", 1.0) if new_team_data else 1.0
+    
+    # Ensure valid park factors
+    if not isinstance(current_pf, (int, float)) or current_pf <= 0:
+        current_pf = 1.0
+    if not isinstance(new_pf, (int, float)) or new_pf <= 0:
+        new_pf = 1.0
+    if not isinstance(current_pf_hr, (int, float)) or current_pf_hr <= 0:
+        current_pf_hr = 1.0
+    if not isinstance(new_pf_hr, (int, float)) or new_pf_hr <= 0:
+        new_pf_hr = 1.0
+    
+    # Calculate relative park factor change
+    # If moving from PF 1.10 to PF 0.90, the ratio is 0.90/1.10 = 0.82
+    pf_ratio = new_pf / current_pf if current_pf > 0 else 1.0
+    hr_ratio = new_pf_hr / current_pf_hr if current_pf_hr > 0 else 1.0
+    
+    # Estimate ERA change based on park factor shift
+    # A 10% reduction in park factor roughly translates to 0.30-0.40 ERA improvement
+    era_change = (pf_ratio - 1) * 3.50  # Baseline ERA of 3.50, scaled by ratio
+    
+    # Estimate HR allowed change
+    # Get pitcher's stuff rating to estimate HR susceptibility
+    stuff_raw = parse_stat_value(player.get("STU", 0))
+    base_hr_estimate = max(0, 30 - (stuff_raw / 3))  # Lower stuff = more HRs
+    hr_change = base_hr_estimate * (hr_ratio - 1)
+    
+    # Determine impact level
+    if abs(era_change) >= 0.30 or abs(hr_change) >= 3:
+        impact_level = "significant"
+    elif abs(era_change) >= 0.15 or abs(hr_change) >= 1.5:
+        impact_level = "moderate"
+    else:
+        impact_level = "minimal"
+    
+    # Build description
+    parts = []
+    if abs(era_change) >= 0.10:
+        sign = "+" if era_change > 0 else ""
+        parts.append(f"{sign}{era_change:.2f} ERA")
+    if abs(hr_change) >= 1:
+        sign = "+" if hr_change > 0 else ""
+        parts.append(f"{sign}{hr_change:.0f} HR allowed")
+    
+    description = ", ".join(parts) if parts else "Minimal park impact"
+    
+    return {
+        "era_change": round(era_change, 2),
+        "hr_allowed_change": round(hr_change, 1),
+        "description": description,
+        "impact_level": impact_level,
+        "current_pf": current_pf,
+        "new_pf": new_pf,
+        "current_pf_hr": current_pf_hr,
+        "new_pf_hr": new_pf_hr,
+    }
