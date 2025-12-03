@@ -681,6 +681,33 @@ Include all these Data points/Attributes:
 > Tip:
 > If you see errors or warnings, check your export views and make sure all fields were included.
 
+### 6. Export Team List (Optional)
+
+For enhanced Trade Finder functionality with team buyer/seller status and park factors, also export the Team List:
+
+1. In OOTP, navigate to **League → Standings** or the Teams view
+2. Create a custom view including these columns:
+   - `Abbr` - Team abbreviation (required, matches ORG field in Player List)
+   - `Team Name` - Full team name
+   - `Park` - Stadium name
+   - `W`, `L`, `%` - Current record and win percentage
+   - `GB` - Games back in division
+   - Park factor columns (optional):
+     - `PF` - Overall park factor
+     - `PF AVG`, `AVG L`, `AVG R` - Batting average factors (overall, vs lefties, vs righties)
+     - `PF HR`, `HR L`, `HR R` - Home run factors
+     - `PF D` - Doubles factor
+     - `PF T` - Triples factor
+   - `lyW`, `lyL`, `ly%` - Last year's record (optional, for trend analysis)
+3. Export to disk and save as `Team List.html` in the same folder as `Player List.html`
+
+**What Team Data Enables:**
+- **Trade Finder**: Shows team buyer/seller status to identify better trade targets
+- **Park Factors**: Context for player evaluation (e.g., home run suppression in pitcher parks)
+- **Team Status**: Automatic classification as buyer, seller, or neutral based on standings
+
+> **Note:** Team List.html is optional. If not provided, Hector will show a warning and continue with reduced functionality.
+
 ---
 
 ## Features Overview

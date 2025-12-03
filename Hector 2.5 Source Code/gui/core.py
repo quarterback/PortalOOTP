@@ -8,6 +8,7 @@ import threading
 from pathlib import Path
 from pitchers import calculate_score
 from batters import calculate_batter_score
+from team_parser import parse_team_html, build_teams_by_abbr
 from .style import setup_theme
 from .pitcher_tab import add_pitcher_tab
 from .batter_tab import add_batter_tab
@@ -150,6 +151,27 @@ def build_gui():
     class DATA:
         pitchers = []
         batters = []
+        teams_by_abbr = {}  # Team data keyed by abbreviation
+        team_data_loaded = False  # Track if team data was successfully loaded
+
+    def load_team_data():
+        """
+        Load team data from Team List.html.
+        Returns dict mapping team abbreviation to team data, or empty dict if file not found.
+        """
+        team_file_path = "Team List.html"
+        
+        if not os.path.exists(team_file_path):
+            return {}, False
+        
+        try:
+            teams_list = parse_team_html(team_file_path)
+            if teams_list:
+                teams_by_abbr = build_teams_by_abbr(teams_list)
+                return teams_by_abbr, True
+            return {}, False
+        except Exception:
+            return {}, False
 
     def choose_and_load_file(result):
         reload_weights()
@@ -230,6 +252,23 @@ def build_gui():
             else:
                 result["pitchers"] = sorted(DATA.pitchers, key=lambda p: p["Scores"].get("total", 0), reverse=True)
                 result["batters"] = sorted(DATA.batters, key=lambda b: b["Scores"].get("total", 0), reverse=True)
+                
+                # Load team data (optional - app continues if not found)
+                DATA.teams_by_abbr, DATA.team_data_loaded = load_team_data()
+                result["teams_by_abbr"] = DATA.teams_by_abbr
+                result["team_data_loaded"] = DATA.team_data_loaded
+                
+                # Show warning if team data not loaded (don't crash, just reduced functionality)
+                if not DATA.team_data_loaded:
+                    # Queue warning to show after main thread is available
+                    result["team_warning"] = (
+                        "Team List.html not found or could not be loaded.\n\n"
+                        "Some features will have reduced functionality:\n"
+                        "- Team buyer/seller status unavailable\n"
+                        "- Park factors not available for player evaluation\n\n"
+                        "To enable these features, export 'Team List.html' from OOTP\n"
+                        "and place it in the same folder as Player List.html."
+                    )
         except Exception as e:
             # Provide more detailed error information
             error_msg = f"Error loading 'Player List.html':\n\n{str(e)}\n\n"
@@ -250,6 +289,11 @@ def build_gui():
             messagebox.showerror("Load Error", str(result["exception"]))
             root.destroy()
             sys.exit(1)
+        
+        # Show team data warning if needed (only on initial load, not reload)
+        if not after_reload and result.get("team_warning"):
+            messagebox.showwarning("Team Data", result["team_warning"])
+        
         if not after_reload:
             # Main UI
             title = create_title_label(root, font, "Hector 2.4 - OOTP Analyzer")
@@ -309,7 +353,12 @@ def build_gui():
                             teams_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             trade_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             contract_tab.refresh(result_reload["pitchers"], result_reload["batters"])
-                            trade_finder_tab.refresh(result_reload["pitchers"], result_reload["batters"])
+                            # Pass team data to trade_finder_tab
+                            trade_finder_tab.refresh(
+                                result_reload["pitchers"], 
+                                result_reload["batters"],
+                                result_reload.get("teams_by_abbr", {})
+                            )
                             contract_value_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             platoon_finder_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             hidden_gems_tab.refresh(result_reload["pitchers"], result_reload["batters"])
@@ -325,7 +374,12 @@ def build_gui():
             teams_tab.refresh(result["pitchers"], result["batters"])
             trade_tab.refresh(result["pitchers"], result["batters"])
             contract_tab.refresh(result["pitchers"], result["batters"])
-            trade_finder_tab.refresh(result["pitchers"], result["batters"])
+            # Pass team data to trade_finder_tab
+            trade_finder_tab.refresh(
+                result["pitchers"], 
+                result["batters"],
+                result.get("teams_by_abbr", {})
+            )
             contract_value_tab.refresh(result["pitchers"], result["batters"])
             platoon_finder_tab.refresh(result["pitchers"], result["batters"])
             hidden_gems_tab.refresh(result["pitchers"], result["batters"])

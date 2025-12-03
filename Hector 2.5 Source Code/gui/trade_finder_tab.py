@@ -7,7 +7,7 @@ from .widgets import (
 )
 from .tooltips import add_button_tooltip
 from trade_value import parse_number, parse_years_left, get_contract_status, parse_salary
-from team_parser import calculate_surplus_value, get_surplus_tier
+from team_parser import calculate_surplus_value, get_surplus_tier, get_park_factor_context
 from player_utils import parse_star_rating
 
 player_url_template = load_player_url_template()
@@ -37,6 +37,7 @@ def add_trade_finder_tab(notebook, font):
     # Data storage
     all_pitchers = []
     all_batters = []
+    teams_data = {}  # Team data keyed by abbreviation
     
     # Create a notebook within the tab for different trade finder sections
     inner_notebook = ttk.Notebook(trade_finder_frame)
@@ -578,7 +579,7 @@ def add_trade_finder_tab(notebook, font):
     surplus_hsb = ttk.Scrollbar(surplus_table_frame, orient="horizontal")
     surplus_hsb.pack(side="bottom", fill="x")
     
-    surplus_cols = ("Name", "POS", "Age", "Team", "OVR", "WAR", "Salary", "Surplus", "Tier")
+    surplus_cols = ("Name", "POS", "Age", "Team", "Status", "OVR", "WAR", "Salary", "Surplus", "Tier")
     surplus_table = ttk.Treeview(
         surplus_table_frame,
         columns=surplus_cols,
@@ -592,7 +593,7 @@ def add_trade_finder_tab(notebook, font):
     surplus_hsb.config(command=surplus_table.xview)
     
     surplus_col_widths = {
-        "Name": 150, "POS": 45, "Age": 40, "Team": 55,
+        "Name": 150, "POS": 45, "Age": 40, "Team": 55, "Status": 55,
         "OVR": 50, "WAR": 50, "Salary": 70, "Surplus": 70, "Tier": 80
     }
     for col in surplus_cols:
@@ -650,13 +651,19 @@ def add_trade_finder_tab(notebook, font):
             surplus_tier = get_surplus_tier(surplus)
             ovr = parse_star_rating(p.get("OVR", "0"))
             
+            # Get team status from teams_data
+            team_abbr = p.get("ORG", "")
+            team_info = teams_data.get(team_abbr, {})
+            team_status = team_info.get("status", "-")
+            
             players_with_surplus.append({
                 "player": p,
                 "type": "pitcher",
                 "name": p.get("Name", ""),
                 "pos": pos,
                 "age": age,
-                "team": p.get("ORG", ""),
+                "team": team_abbr,
+                "team_status": team_status,
                 "ovr": ovr,
                 "war": war,
                 "salary": salary,
@@ -691,13 +698,19 @@ def add_trade_finder_tab(notebook, font):
             surplus_tier = get_surplus_tier(surplus)
             ovr = parse_star_rating(b.get("OVR", "0"))
             
+            # Get team status from teams_data
+            team_abbr = b.get("ORG", "")
+            team_info = teams_data.get(team_abbr, {})
+            team_status = team_info.get("status", "-")
+            
             players_with_surplus.append({
                 "player": b,
                 "type": "batter",
                 "name": b.get("Name", ""),
                 "pos": pos,
                 "age": age,
-                "team": b.get("ORG", ""),
+                "team": team_abbr,
+                "team_status": team_status,
                 "ovr": ovr,
                 "war": war,
                 "salary": salary,
@@ -716,6 +729,9 @@ def add_trade_finder_tab(notebook, font):
         
         players = get_surplus_value_players()
         
+        # Add tag for seller teams (highlight as better trade targets)
+        surplus_table.tag_configure("seller_team", background="#4a3d2d")  # Brown tint for seller teams
+        
         for player_data in players:
             tags = []
             if player_data["surplus"] >= 10:
@@ -723,11 +739,25 @@ def add_trade_finder_tab(notebook, font):
             elif player_data["surplus"] >= HIGH_SURPLUS_THRESHOLD:
                 tags.append("high_surplus")
             
+            # Add seller team tag if applicable
+            if player_data.get("team_status") == "seller":
+                tags.append("seller_team")
+            
+            # Format team status for display
+            status_display = player_data.get("team_status", "-")
+            if status_display == "seller":
+                status_display = "📤 Sell"
+            elif status_display == "buyer":
+                status_display = "📥 Buy"
+            elif status_display == "neutral":
+                status_display = "➖"
+            
             values = (
                 player_data["name"],
                 player_data["pos"],
                 player_data["age"],
                 player_data["team"],
+                status_display,
                 f"{player_data['ovr']:.1f}",
                 f"{player_data['war']:.1f}",
                 f"${player_data['salary']:.1f}M",
@@ -754,11 +784,14 @@ def add_trade_finder_tab(notebook, font):
         update_surplus_table()
     
     class TradeFinderTab:
-        def refresh(self, pitchers, batters):
+        def refresh(self, pitchers, batters, teams_by_abbr=None):
             all_pitchers.clear()
             all_batters.clear()
+            teams_data.clear()
             all_pitchers.extend(pitchers)
             all_batters.extend(batters)
+            if teams_by_abbr:
+                teams_data.update(teams_by_abbr)
             update_all_with_surplus()
     
     return TradeFinderTab()

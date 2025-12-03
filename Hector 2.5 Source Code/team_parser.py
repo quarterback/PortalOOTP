@@ -14,6 +14,13 @@ GAMES_BACK_SELLER_THRESHOLD = 10.0    # 10+ games back = likely seller
 # Surplus value calculation constants
 DOLLARS_PER_WAR = 8.0  # Millions per WAR (league average)
 
+# Park factor columns that may be present in Team List.html
+PARK_FACTOR_COLUMNS = [
+    "PF", "PF AVG", "AVG L", "AVG R",
+    "PF HR", "HR L", "HR R",
+    "PF D", "PF T"
+]
+
 
 def parse_team_html(html_path):
     """
@@ -25,12 +32,13 @@ def parse_team_html(html_path):
     - POS/GB: Division position and games back
     - WAR/rWAR: Team-level WAR totals
     - lyW/lyL/ly%: Last year's record for trend analysis
+    - Park factor columns: PF, PF AVG, AVG L, AVG R, PF HR, HR L, HR R, PF D, PF T
     
     Args:
         html_path: Path to the team HTML file
     
     Returns:
-        List of team dicts with parsed data
+        List of team dicts with parsed data including park factors
     """
     try:
         with open(html_path, 'r', encoding='utf-8') as f:
@@ -70,9 +78,111 @@ def parse_team_html(html_path):
             continue
         
         team_data = {headers[i]: cells[i].get_text(strip=True) for i in range(len(headers))}
+        
+        # Parse park factor columns into numeric values
+        for pf_col in PARK_FACTOR_COLUMNS:
+            if pf_col in team_data:
+                team_data[pf_col] = parse_number(team_data[pf_col])
+        
         teams.append(team_data)
     
     return teams
+
+
+def build_teams_by_abbr(teams_list):
+    """
+    Build a dictionary mapping team abbreviation to team data.
+    
+    The Abbr column in Team List.html corresponds to the ORG field 
+    in Player List.html, enabling player-to-team lookups.
+    
+    Args:
+        teams_list: List of team dicts from parse_team_html()
+    
+    Returns:
+        Dict mapping team abbreviation to team data with status info:
+        {
+            "SF": {"Team Name": "San Francisco Giants", "status": "seller", ...},
+            "PHI": {"Team Name": "Philadelphia Phillies", "status": "buyer", ...},
+            ...
+        }
+    """
+    teams_by_abbr = {}
+    
+    for team in teams_list:
+        # Try different column names for team abbreviation
+        abbr = team.get("Abbr", team.get("ORG", team.get("TM", "")))
+        if not abbr:
+            continue
+        
+        # Add team status info
+        status_info = get_team_status(team)
+        team_with_status = {**team, **status_info}
+        
+        teams_by_abbr[abbr] = team_with_status
+    
+    return teams_by_abbr
+
+
+def get_park_factor_context(team_data, stat_type="HR"):
+    """
+    Get park factor context for player evaluation.
+    
+    Args:
+        team_data: Team dict with park factor data
+        stat_type: "HR", "AVG", "D", "T", or "overall"
+    
+    Returns:
+        Dict with park factor info and interpretation:
+        {
+            "factor": 0.688,
+            "type": "pitcher_friendly",
+            "description": "Suppresses home runs significantly (-31%)"
+        }
+    """
+    if not team_data:
+        return {"factor": 1.0, "type": "neutral", "description": "No park data available"}
+    
+    # Map stat type to column names
+    column_map = {
+        "HR": "PF HR",
+        "AVG": "PF AVG", 
+        "D": "PF D",
+        "T": "PF T",
+        "overall": "PF"
+    }
+    
+    col = column_map.get(stat_type, "PF HR")
+    factor = team_data.get(col, 1.0)
+    
+    if not isinstance(factor, (int, float)):
+        factor = parse_number(factor)
+    
+    if factor == 0:
+        factor = 1.0
+    
+    # Interpret the park factor
+    if factor < 0.85:
+        pf_type = "pitcher_friendly"
+        effect = f"Suppresses {stat_type} significantly ({int((factor - 1) * 100)}%)"
+    elif factor < 0.95:
+        pf_type = "slightly_pitcher_friendly"
+        effect = f"Slightly suppresses {stat_type} ({int((factor - 1) * 100)}%)"
+    elif factor > 1.15:
+        pf_type = "hitter_friendly"
+        effect = f"Boosts {stat_type} significantly (+{int((factor - 1) * 100)}%)"
+    elif factor > 1.05:
+        pf_type = "slightly_hitter_friendly"
+        effect = f"Slightly boosts {stat_type} (+{int((factor - 1) * 100)}%)"
+    else:
+        pf_type = "neutral"
+        effect = f"Neutral for {stat_type}"
+    
+    return {
+        "factor": factor,
+        "type": pf_type,
+        "description": effect
+    }
 
 
 def get_team_status(team_data):
