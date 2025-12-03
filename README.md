@@ -359,6 +359,88 @@ Find young players with significant development upside:
 
 ---
 
+## Trade Builder Tab
+[⬆️ Back to Top](#top)
+
+The Trade Builder tab provides an interactive interface for building and evaluating trades with park-adjusted player ratings and multiple trade matching modes.
+
+### Three-Panel Layout
+
+**Left Panel: Your Trade Assets**
+- Team selector dropdown to choose your team
+- Player list showing all players from selected team with:
+  - Name, Position, Age, OVR, Salary, Years Left
+  - Surplus Value (WAR-based value vs. salary)
+  - Park-Adjusted Rating bonus
+- Click players to select them for trading
+- Running total of trade value offered
+
+**Right Panel: Trade Targets / Search Results**
+- Filter controls:
+  - Position filter (All, SP, RP, C, 1B, 2B, 3B, SS, LF, CF, RF, DH)
+  - Age range (min/max)
+  - Team Status (All, Sellers, Buyers, Neutral)
+  - Minimum OVR
+- Trade Mode selection:
+  - ⚖️ **Fair Trade**: Returns players of equal value (±10% tolerance)
+  - 📈 **Buy Low**: Prioritizes undervalued players from seller teams
+  - 🎰 **Fleece Mode**: Returns players where you gain significant value (for fun)
+- Results list with match percentage and value comparison
+- Click players to add them to your receiving list
+
+**Bottom Panel: Trade Summary**
+- Side-by-side comparison of players being traded
+- Trade Grade (A+ to F) based on value differential:
+  - A+: You gain 30%+ value
+  - A: You gain 15-30%
+  - B: Roughly fair (±15%)
+  - C: You lose 15-30%
+  - D: You lose 30-50%
+  - F: You lose 50%+
+- Park Factor Impact Preview showing projected stat changes
+
+### Park-Adjusted Player Ratings
+
+The Trade Builder includes park factor adjustments to player evaluation:
+
+**For Batters:**
+- Power scores adjusted using PF HR from team data
+- Contact/batting scores adjusted using PF AVG
+- Formula: `adjusted_score = raw_score * (1 / park_factor)`
+- Players in pitcher-friendly parks get boosted adjusted ratings
+
+**For Pitchers:**
+- Inverse logic - pitchers in hitter-friendly parks get boosted ratings
+- Adjusted using overall PF factor
+- Formula: `adjusted_score = raw_score * park_factor`
+
+### Hidden Gems Integration
+
+The Buy Low trade mode surfaces hidden gems automatically:
+
+**Hidden Gem Criteria:**
+- Plays in extreme pitcher park (PF < 0.95 or PF HR < 0.90) for batters
+- Plays in extreme hitter park (PF > 1.05 or PF HR > 1.10) for pitchers
+- Has good raw power/contact/stuff being suppressed
+- On a seller team (more likely available via trade)
+- Good surplus value (underpaid relative to production)
+
+Hidden gems are highlighted with a 💎 indicator and prioritized in Buy Low mode.
+
+### Trade Value Calculation
+
+The comprehensive trade value includes:
+```
+trade_value = (
+    base_surplus_value           # WAR-based, from existing calculation
+    + park_adjustment_bonus      # Value added if in suppressive park
+    + age_adjustment             # Young players worth more
+    + contract_value             # Years of control, salary efficiency
+)
+```
+
+---
+
 ## Contract Value Tab
 [⬆️ Back to Top](#top)
 

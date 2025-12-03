@@ -16,6 +16,7 @@ from .teams_tab import add_teams_tab
 from .trade_tab import add_trade_tab
 from .contract_tab import add_contract_tab
 from .trade_finder_tab import add_trade_finder_tab
+from .trade_builder_tab import add_trade_builder_tab
 from .contract_value_tab import add_contract_value_tab
 from .platoon_finder_tab import add_platoon_finder_tab
 from .hidden_gems_tab import add_hidden_gems_tab
@@ -316,6 +317,7 @@ def build_gui():
             trade_tab = add_trade_tab(notebook, font)
             contract_tab = add_contract_tab(notebook, font)
             trade_finder_tab = add_trade_finder_tab(notebook, font)
+            trade_builder_tab = add_trade_builder_tab(notebook, font)
             contract_value_tab = add_contract_value_tab(notebook, font)
             platoon_finder_tab = add_platoon_finder_tab(notebook, font)
             hidden_gems_tab = add_hidden_gems_tab(notebook, font)
@@ -329,6 +331,7 @@ def build_gui():
                 "trade_tab": trade_tab,
                 "contract_tab": contract_tab,
                 "trade_finder_tab": trade_finder_tab,
+                "trade_builder_tab": trade_builder_tab,
                 "contract_value_tab": contract_value_tab,
                 "platoon_finder_tab": platoon_finder_tab,
                 "hidden_gems_tab": hidden_gems_tab,
@@ -365,6 +368,12 @@ def build_gui():
                                 result_reload["batters"],
                                 result_reload.get("teams_by_abbr", {})
                             )
+                            # Pass team data to trade_builder_tab
+                            trade_builder_tab.refresh(
+                                result_reload["pitchers"], 
+                                result_reload["batters"],
+                                result_reload.get("teams_by_abbr", {})
+                            )
                             contract_value_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             platoon_finder_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             hidden_gems_tab.refresh(result_reload["pitchers"], result_reload["batters"])
@@ -382,6 +391,12 @@ def build_gui():
             contract_tab.refresh(result["pitchers"], result["batters"])
             # Pass team data to trade_finder_tab
             trade_finder_tab.refresh(
+                result["pitchers"], 
+                result["batters"],
+                result.get("teams_by_abbr", {})
+            )
+            # Pass team data to trade_builder_tab
+            trade_builder_tab.refresh(
                 result["pitchers"], 
                 result["batters"],
                 result.get("teams_by_abbr", {})
