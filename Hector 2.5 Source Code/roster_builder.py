@@ -59,6 +59,36 @@ ARBITRATION_VALUE_BONUS = 5              # Bonus points for arbitration players 
 # Bench positions for auto-generate (utility-focused)
 BENCH_POSITIONS = ["C", "1B", "2B", "SS", "LF", "CF", "RF"]
 
+# Candidate pool sizes for different positions
+CANDIDATE_POOL_SIZES = {
+    "lineup": {"rebuilding_budget": 50, "contender": 20, "middle": 30},
+    "rotation": {"rebuilding_budget": 30, "contender": 15, "middle": 20},
+    "bullpen": {"rebuilding_budget": 40, "contender": 20, "middle": 25},
+    "bench": {"rebuilding_budget": 15, "contender": 8, "middle": 10},
+}
+
+
+def _get_candidate_pool_size(position_type, competitive_level, salary_tier):
+    """
+    Get the appropriate candidate pool size based on team philosophy.
+    
+    Args:
+        position_type: "lineup", "rotation", "bullpen", or "bench"
+        competitive_level: "Contender", "Middle of the pack", or "Rebuilding"
+        salary_tier: "Big spender", "Mid-market", or "Budget"
+    
+    Returns:
+        Number of candidates to consider
+    """
+    pool_sizes = CANDIDATE_POOL_SIZES.get(position_type, CANDIDATE_POOL_SIZES["lineup"])
+    
+    if competitive_level == "Rebuilding" or salary_tier == "Budget":
+        return pool_sizes["rebuilding_budget"]
+    elif competitive_level == "Contender" or salary_tier == "Big spender":
+        return pool_sizes["contender"]
+    else:
+        return pool_sizes["middle"]
+
 
 def get_grade_for_ovr(ovr, league_avg=55):
     """
@@ -432,14 +462,8 @@ class RosterBuilder:
         # Track used players to avoid duplicates
         used_players = set()
         
-        # Determine candidate pool size based on competitive level
-        # Rebuilding/Budget teams need access to a much larger pool to find cheap/young players
-        if competitive_level == "Rebuilding" or salary_tier == "Budget":
-            candidate_count = 50  # Look through more players
-        elif competitive_level == "Contender" or salary_tier == "Big spender":
-            candidate_count = 20  # Still some variety for contenders
-        else:
-            candidate_count = 30  # Middle of the pack
+        # Get candidate pool size for lineup positions
+        candidate_count = _get_candidate_pool_size("lineup", competitive_level, salary_tier)
         
         # Fill lineup positions
         for pos in LINEUP_SLOTS:
@@ -583,10 +607,10 @@ class RosterBuilder:
                     weight *= 2.0
                 elif ovr_normalized >= 60:
                     weight *= 1.5
+                elif ovr_normalized < 50:
+                    weight *= 0.1  # Strongest penalty for very weak players
                 elif ovr_normalized < 55:
                     weight *= 0.3  # Stronger penalty for weak players
-                elif ovr_normalized < 50:
-                    weight *= 0.1
             elif competitive_level == "Rebuilding":
                 # Strongly favor younger players with upside, penalize older players
                 if age <= 23:
@@ -679,13 +703,7 @@ class RosterBuilder:
     
     def _fill_rotation_random(self, competitive_level, salary_tier, identity, used_players):
         """Fill rotation slots with weighted random selection."""
-        # Determine candidate pool size based on competitive level
-        if competitive_level == "Rebuilding" or salary_tier == "Budget":
-            candidate_count = 30
-        elif competitive_level == "Contender" or salary_tier == "Big spender":
-            candidate_count = 15
-        else:
-            candidate_count = 20
+        candidate_count = _get_candidate_pool_size("rotation", competitive_level, salary_tier)
             
         for _ in range(ROTATION_COUNT):
             if len(self.rotation) >= ROTATION_COUNT:
@@ -702,13 +720,7 @@ class RosterBuilder:
     
     def _fill_bullpen_random(self, competitive_level, salary_tier, identity, used_players):
         """Fill bullpen slots with weighted random selection."""
-        # Determine candidate pool size based on competitive level
-        if competitive_level == "Rebuilding" or salary_tier == "Budget":
-            candidate_count = 40
-        elif competitive_level == "Contender" or salary_tier == "Big spender":
-            candidate_count = 20
-        else:
-            candidate_count = 25
+        candidate_count = _get_candidate_pool_size("bullpen", competitive_level, salary_tier)
             
         for _ in range(BULLPEN_COUNT):
             if len(self.bullpen) >= BULLPEN_COUNT:
@@ -725,13 +737,7 @@ class RosterBuilder:
     
     def _fill_bench_random(self, competitive_level, salary_tier, identity, used_players):
         """Fill bench slots with weighted random selection, preferring versatile players."""
-        # Determine candidate pool size based on competitive level
-        if competitive_level == "Rebuilding" or salary_tier == "Budget":
-            candidate_count = 15
-        elif competitive_level == "Contender" or salary_tier == "Big spender":
-            candidate_count = 8
-        else:
-            candidate_count = 10
+        candidate_count = _get_candidate_pool_size("bench", competitive_level, salary_tier)
             
         for i in range(BENCH_COUNT):
             if len(self.bench) >= BENCH_COUNT:
