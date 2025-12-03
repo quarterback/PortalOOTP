@@ -1067,8 +1067,7 @@ def add_trade_builder_tab(notebook, font):
     
     def on_team_change(event):
         """Handle team dropdown selection change."""
-        clear_selected_assets()  # Clear selected players when team changes
-        update_player_list()
+        clear_selected_assets()  # Clear selected players when team changes (also updates player list)
     
     player_table.bind("<Button-1>", toggle_player_selection)
     results_table.bind("<Button-1>", toggle_target_selection)
