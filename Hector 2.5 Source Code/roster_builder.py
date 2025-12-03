@@ -67,6 +67,76 @@ CANDIDATE_POOL_SIZES = {
     "bench": {"rebuilding_budget": 15, "contender": 8, "middle": 10},
 }
 
+# Expansion Team Archetypes
+# These archetypes provide specific roster-building strategies for expansion teams
+EXPANSION_ARCHETYPES = {
+    "Year-3 Contender": {
+        "name": "Year-3 Contender",
+        "description": "Plausibly .500 by year 2, playoff-level by year 3",
+        "goal": "Build with undervalued everyday players who can become trade chips",
+        "ovr_range": (50, 65),       # Target OVR 50-65
+        "age_range": (27, 32),       # Post-prime but stable veterans
+        "salary_max": 15.0,          # Moderate salaries
+        "pot_weight": 0.3,           # Some potential consideration
+        "ovr_weight": 0.5,           # Prioritize current production
+        "value_weight": 0.2,         # Good value contracts
+        "randomness": 0.15,          # Moderate variety
+    },
+    "Prospect-Heavy": {
+        "name": "Prospect-Heavy Build (Rays/Guardians Model)",
+        "description": "Maximize future surplus value, accept 60-70 win seasons early",
+        "goal": "Prioritize years of control and high ceiling players",
+        "ovr_range": (40, 60),       # Accept lower OVR
+        "age_range": (20, 27),       # Young players
+        "salary_max": 5.0,           # Low salaries only
+        "pot_weight": 0.5,           # High potential weight
+        "ovr_weight": 0.2,           # Lower current production importance
+        "value_weight": 0.3,         # Value efficiency matters
+        "randomness": 0.2,           # High variety for churn
+        "prefer_pre_arb": True,      # Prefer pre-arb players
+    },
+    "Stars-and-Scrubs": {
+        "name": "Stars-and-Scrubs Marquee",
+        "description": "1-2 headliners for brand/ticket sales plus cheap filler",
+        "goal": "Bimodal roster: elite stars + minimum salary depth",
+        "ovr_range": (35, 80),       # Wide range
+        "age_range": (23, 35),       # Any age for stars
+        "salary_max": None,          # No cap for stars
+        "pot_weight": 0.2,           # Some potential
+        "ovr_weight": 0.6,           # Prioritize OVR heavily
+        "value_weight": 0.2,         # Less value focus
+        "randomness": 0.1,           # Consistent star selection
+        "star_slots": 2,             # Number of star players to target
+        "star_min_ovr": 75,          # Minimum OVR for star slots (normalized)
+    },
+    "Competent Floor": {
+        "name": "Competent-Now Floor + Upside Layer",
+        "description": "Professional baseline on day one, upside through development",
+        "goal": "80-83 win floor with modular pieces and development slots",
+        "ovr_range": (55, 65),       # Solid floor for core
+        "age_range": (25, 31),       # Mix of prime and pre-prime
+        "salary_max": 12.0,          # Moderate salary cap
+        "pot_weight": 0.35,          # Balance pot and ovr
+        "ovr_weight": 0.45,          # Current production important
+        "value_weight": 0.2,         # Value consideration
+        "randomness": 0.12,          # Moderate variety
+        "upside_slots": 8,           # Number of high-upside development slots
+        "upside_pot_min": 65,        # Min POT for upside slots (normalized)
+    },
+}
+
+# Cheapskate mode constants
+CHEAPSKATE_SALARY_PENALTY_THRESHOLD = 3.0   # Salary above this gets heavy penalty
+CHEAPSKATE_SALARY_EXTREME_PENALTY = 0.01    # Weight for high salary players
+
+# Expansion mode weight multipliers
+EXPANSION_PRE_ARB_WEIGHT = 2.0              # Weight boost for pre-arbitration players
+EXPANSION_ARBITRATION_WEIGHT = 1.5          # Weight boost for arbitration players
+CHEAPSKATE_MIN_SALARY_BONUS = 4.0           # Weight boost for minimum salary
+CHEAPSKATE_OVR_FLOOR = 40                   # Minimum viable OVR
+CHEAPSKATE_OVR_CEILING = 55                 # Target OVR ceiling
+CHEAPSKATE_RANDOMNESS = 0.25                # High randomness for variety
+
 
 def _get_candidate_pool_size(position_type, competitive_level, salary_tier):
     """
@@ -444,46 +514,71 @@ class RosterBuilder:
                 self.bullpen.append(pitcher_lookup[name])
     
     def auto_generate_roster(self, competitive_level="Middle of the pack", 
-                              salary_tier="Mid-market", identity="Any"):
+                              salary_tier="Mid-market", identity="Any", 
+                              expansion_mode="Off"):
         """
         Auto-generate a complete roster using weighted random selection.
         
         Args:
             competitive_level: "Contender", "Middle of the pack", or "Rebuilding"
-            salary_tier: "Big spender", "Mid-market", or "Budget"
+            salary_tier: "Big spender", "Mid-market", "Budget", or "Cheapskate"
             identity: "Any", "Power-focused", "Speed-focused", "Pitching-focused", 
                      or archetype keys like "mashers", "speed_defense", etc.
+            expansion_mode: "Off", "Year-3 Contender", "Prospect-Heavy", 
+                           "Stars-and-Scrubs", or "Competent Floor"
         
         Each call produces a different roster due to weighted randomness.
-        All three options (competitive_level, salary_tier, identity) are applied together.
+        
+        All options are applied together multiplicatively - meaning the weight
+        modifiers from each option are multiplied together. For example:
+        - "Rebuilding" applies a 3.0x weight boost for players age <= 23
+        - "Budget" applies a 0.05x penalty for players with salary >= 25M
+        - Combined, these multiply: a young, expensive player gets 3.0 * 0.05 = 0.15x
+        
+        When expansion_mode is not "Off", it overrides/modifies the standard
+        weights to match the expansion archetype's strategy.
         """
         self.clear_roster()
         
         # Track used players to avoid duplicates
         used_players = set()
         
+        # Get expansion archetype if active
+        expansion_config = None
+        if expansion_mode != "Off":
+            expansion_config = EXPANSION_ARCHETYPES.get(expansion_mode)
+        
         # Get candidate pool size for lineup positions
         candidate_count = _get_candidate_pool_size("lineup", competitive_level, salary_tier)
         
+        # For Stars-and-Scrubs, fill star slots first
+        if expansion_config and expansion_config.get("star_slots"):
+            self._fill_star_slots(expansion_config, used_players)
+        
         # Fill lineup positions
         for pos in LINEUP_SLOTS:
+            # Skip positions already filled by star slots
+            if self.lineup.get(pos) is not None:
+                continue
+                
             candidates = self._get_position_candidates(pos, candidate_count, "batter", used_players,
                                                         competitive_level, salary_tier)
             if candidates:
                 weights = self._calculate_weights(candidates, competitive_level, 
-                                                   salary_tier, identity, "batter")
+                                                   salary_tier, identity, "batter",
+                                                   expansion_config)
                 selected = random.choices(candidates, weights=weights, k=1)[0]
                 self.add_to_lineup(selected, pos)
                 used_players.add(selected.get("Name", ""))
         
         # Fill rotation
-        self._fill_rotation_random(competitive_level, salary_tier, identity, used_players)
+        self._fill_rotation_random(competitive_level, salary_tier, identity, used_players, expansion_config)
         
         # Fill bullpen
-        self._fill_bullpen_random(competitive_level, salary_tier, identity, used_players)
+        self._fill_bullpen_random(competitive_level, salary_tier, identity, used_players, expansion_config)
         
         # Fill bench
-        self._fill_bench_random(competitive_level, salary_tier, identity, used_players)
+        self._fill_bench_random(competitive_level, salary_tier, identity, used_players, expansion_config)
     
     def _get_position_candidates(self, position, count, player_type, used_players,
                                   competitive_level="Middle of the pack", salary_tier="Mid-market"):
@@ -567,7 +662,7 @@ class RosterBuilder:
         return candidates[:count]
     
     def _calculate_weights(self, candidates, competitive_level, salary_tier, 
-                           identity, player_type):
+                           identity, player_type, expansion_config=None):
         """
         Calculate selection weights for candidate players.
         
@@ -575,8 +670,9 @@ class RosterBuilder:
         - Competitive level (favors high OVR for contenders, youth for rebuilding)
         - Salary tier (favors budget contracts or allows premium spending)
         - Identity (boosts players matching requested archetype)
+        - Expansion config (when active, modifies weights for expansion strategy)
         
-        All three factors are combined multiplicatively, so selecting 
+        All factors are combined multiplicatively, so selecting 
         "Rebuilding" + "Budget" + "Youth-focused" will strongly favor 
         young, cheap players with high potential.
         
@@ -596,50 +692,59 @@ class RosterBuilder:
             age = get_age(player)
             salary = parse_salary(player.get("SLR", 0))
             
-            # Competitive level adjustments
-            if competitive_level == "Contender":
-                # Strongly favor high OVR players, penalize low OVR
-                if ovr_normalized >= 75:
-                    weight *= 4.0
-                elif ovr_normalized >= 70:
-                    weight *= 3.0
-                elif ovr_normalized >= 65:
-                    weight *= 2.0
-                elif ovr_normalized >= 60:
-                    weight *= 1.5
-                elif ovr_normalized < 50:
-                    weight *= 0.1  # Strongest penalty for very weak players
-                elif ovr_normalized < 55:
-                    weight *= 0.3  # Stronger penalty for weak players
-            elif competitive_level == "Rebuilding":
-                # Strongly favor younger players with upside, penalize older players
-                if age <= 23:
-                    weight *= 3.0  # Strongest boost for very young
-                elif age <= 25:
-                    weight *= 2.5
-                elif age <= 27:
-                    weight *= 1.5
-                elif age >= 33:
-                    weight *= 0.1  # Strong penalty for old players
-                elif age >= 30:
-                    weight *= 0.3
-                # Favor high potential
-                if pot_normalized >= 75:
-                    weight *= 2.5
-                elif pot_normalized >= 70:
-                    weight *= 2.0
-                elif pot_normalized >= 65:
-                    weight *= 1.5
-                elif pot_normalized >= 60:
-                    weight *= 1.2
-                # Slight penalty for high OVR (want players not yet at peak)
-                if ovr_normalized >= 75:
-                    weight *= 0.7
-            # "Middle of the pack" uses balanced weights (no major adjustments)
-            # but still applies salary and identity modifiers
+            # Apply expansion archetype weights if active
+            if expansion_config:
+                weight = self._apply_expansion_weights(
+                    weight, player, ovr_normalized, pot_normalized, age, salary, expansion_config
+                )
+            else:
+                # Competitive level adjustments (only when no expansion mode)
+                if competitive_level == "Contender":
+                    # Strongly favor high OVR players, penalize low OVR
+                    if ovr_normalized >= 75:
+                        weight *= 4.0
+                    elif ovr_normalized >= 70:
+                        weight *= 3.0
+                    elif ovr_normalized >= 65:
+                        weight *= 2.0
+                    elif ovr_normalized >= 60:
+                        weight *= 1.5
+                    elif ovr_normalized < 50:
+                        weight *= 0.1  # Strongest penalty for very weak players
+                    elif ovr_normalized < 55:
+                        weight *= 0.3  # Stronger penalty for weak players
+                elif competitive_level == "Rebuilding":
+                    # Strongly favor younger players with upside, penalize older players
+                    if age <= 23:
+                        weight *= 3.0  # Strongest boost for very young
+                    elif age <= 25:
+                        weight *= 2.5
+                    elif age <= 27:
+                        weight *= 1.5
+                    elif age >= 33:
+                        weight *= 0.1  # Strong penalty for old players
+                    elif age >= 30:
+                        weight *= 0.3
+                    # Favor high potential
+                    if pot_normalized >= 75:
+                        weight *= 2.5
+                    elif pot_normalized >= 70:
+                        weight *= 2.0
+                    elif pot_normalized >= 65:
+                        weight *= 1.5
+                    elif pot_normalized >= 60:
+                        weight *= 1.2
+                    # Slight penalty for high OVR (want players not yet at peak)
+                    if ovr_normalized >= 75:
+                        weight *= 0.7
+                # "Middle of the pack" uses balanced weights (no major adjustments)
+                # but still applies salary and identity modifiers
             
             # Salary tier adjustments
-            if salary_tier == "Budget":
+            if salary_tier == "Cheapskate":
+                # Extreme budget mode: heavily penalize any meaningful salary
+                weight = self._apply_cheapskate_weights(weight, ovr_normalized, salary)
+            elif salary_tier == "Budget":
                 # Strongly reduce weight for high-salary players
                 if salary >= 25:
                     weight *= 0.05  # Almost never pick $25M+ players
@@ -681,6 +786,194 @@ class RosterBuilder:
         
         return weights
     
+    def _apply_expansion_weights(self, weight, player, ovr_normalized, pot_normalized, 
+                                  age, salary, config):
+        """
+        Apply expansion archetype-specific weight modifiers.
+        
+        Args:
+            weight: Current weight value
+            player: Player dict
+            ovr_normalized: OVR on 20-80 scale
+            pot_normalized: POT on 20-80 scale
+            age: Player age
+            salary: Salary in millions
+            config: Expansion archetype config dict
+        
+        Returns:
+            Modified weight value
+        """
+        ovr_range = config.get("ovr_range", (40, 80))
+        age_range = config.get("age_range", (20, 35))
+        salary_max = config.get("salary_max")
+        ovr_weight = config.get("ovr_weight", 0.4)
+        pot_weight = config.get("pot_weight", 0.3)
+        value_weight = config.get("value_weight", 0.3)
+        randomness = config.get("randomness", 0.15)
+        
+        # OVR range scoring
+        if ovr_range[0] <= ovr_normalized <= ovr_range[1]:
+            # In target range - boost based on ovr_weight
+            weight *= 1.0 + (ovr_weight * 2)
+        elif ovr_normalized < ovr_range[0]:
+            # Below target - penalty
+            weight *= 0.3
+        else:
+            # Above target - slight penalty for some archetypes
+            weight *= 0.7
+        
+        # Age range scoring
+        if age_range[0] <= age <= age_range[1]:
+            weight *= 1.5
+        elif age < age_range[0]:
+            weight *= 0.8  # Too young
+        else:
+            # Too old - steeper penalty
+            age_over = age - age_range[1]
+            weight *= max(0.1, 1.0 - (age_over * 0.15))
+        
+        # Salary constraint
+        if salary_max is not None and salary > salary_max:
+            # Exponential penalty for over-budget
+            over_ratio = salary / salary_max
+            weight *= max(0.05, 1.0 / over_ratio)
+        
+        # Potential weight adjustment
+        if pot_weight > 0.3:  # High potential focus
+            upside_gap = pot_normalized - ovr_normalized
+            if upside_gap >= 15:
+                weight *= 1.0 + pot_weight
+            elif upside_gap >= 10:
+                weight *= 1.0 + (pot_weight * 0.7)
+            elif upside_gap >= 5:
+                weight *= 1.0 + (pot_weight * 0.4)
+        
+        # Pre-arb preference
+        if config.get("prefer_pre_arb"):
+            yl_data = parse_years_left(player.get("YL", ""))
+            status = yl_data.get("status", "unknown")
+            if status == "pre_arb":
+                weight *= EXPANSION_PRE_ARB_WEIGHT
+            elif status == "arbitration":
+                weight *= EXPANSION_ARBITRATION_WEIGHT
+        
+        # Value efficiency (WAR/$)
+        if value_weight > 0.2:
+            war = get_war(player, "batter" if player.get("POS", "") not in ["SP", "RP", "CL"] else "pitcher")
+            if salary > 0:
+                war_per_dollar = war / salary
+                if war_per_dollar >= 1.0:
+                    weight *= 1.0 + value_weight
+                elif war_per_dollar >= 0.5:
+                    weight *= 1.0 + (value_weight * 0.5)
+            elif war > 0:
+                weight *= 1.5  # Free production
+        
+        # Add randomness for variety
+        if randomness > 0:
+            jitter = 1.0 + random.gauss(0, randomness)
+            weight *= max(0.2, jitter)
+        
+        return weight
+    
+    def _apply_cheapskate_weights(self, weight, ovr_normalized, salary):
+        """
+        Apply Cheapskate mode weight modifiers for absolute minimum cost roster.
+        
+        This mode heavily penalizes any salary above minimum and accepts
+        lower OVR players as long as they're cheap. Adds randomness for variety.
+        
+        Args:
+            weight: Current weight value
+            ovr_normalized: OVR on 20-80 scale
+            salary: Salary in millions
+        
+        Returns:
+            Modified weight value
+        """
+        # Extreme salary penalty - this is the primary driver
+        if salary >= 10:
+            weight *= CHEAPSKATE_SALARY_EXTREME_PENALTY  # Almost never
+        elif salary >= 5:
+            weight *= 0.02
+        elif salary >= CHEAPSKATE_SALARY_PENALTY_THRESHOLD:
+            weight *= 0.05
+        elif salary >= 1:
+            weight *= 0.2
+        elif salary <= 0.5:
+            weight *= CHEAPSKATE_MIN_SALARY_BONUS  # Huge boost for minimum salary
+        else:
+            weight *= 2.0  # Good boost for very cheap
+        
+        # Accept lower OVR as long as functional
+        if ovr_normalized >= CHEAPSKATE_OVR_FLOOR:
+            if ovr_normalized <= CHEAPSKATE_OVR_CEILING:
+                weight *= 1.5  # Sweet spot for cheapskate
+            elif ovr_normalized <= 60:
+                weight *= 1.2  # Acceptable
+            # Higher OVR is fine but not prioritized
+        else:
+            weight *= 0.3  # Below minimum viable
+        
+        # Add randomness for variety between generations
+        jitter = 1.0 + random.gauss(0, CHEAPSKATE_RANDOMNESS)
+        weight *= max(0.2, jitter)
+        
+        return weight
+    
+    def _fill_star_slots(self, expansion_config, used_players):
+        """
+        Fill star player slots for Stars-and-Scrubs archetype.
+        
+        Selects the top N players by OVR to be the marquee players,
+        then other slots will be filled with cheap depth.
+        """
+        star_slots = expansion_config.get("star_slots", 2)
+        star_min_ovr = expansion_config.get("star_min_ovr", 75)
+        
+        # Find star candidates from all batters
+        star_candidates = []
+        for player in self._all_batters:
+            ovr = parse_star_rating(player.get("OVR", "0"))
+            ovr_normalized = normalize_rating(ovr)
+            if ovr_normalized >= star_min_ovr:
+                star_candidates.append((ovr_normalized, player))
+        
+        # Sort by OVR descending
+        star_candidates.sort(key=lambda x: x[0], reverse=True)
+        
+        # Select star players for premium positions (prefer up-the-middle)
+        premium_positions = ["SS", "CF", "C", "2B", "3B"]
+        filled = 0
+        
+        for ovr_norm, player in star_candidates:
+            if filled >= star_slots:
+                break
+            
+            player_pos = player.get("POS", "")
+            if player.get("Name", "") in used_players:
+                continue
+            
+            # Try to place at their natural position
+            if player_pos in LINEUP_SLOTS and self.lineup.get(player_pos) is None:
+                self.add_to_lineup(player, player_pos)
+                used_players.add(player.get("Name", ""))
+                filled += 1
+        
+        # If we didn't fill enough, try any available premium position
+        for ovr_norm, player in star_candidates:
+            if filled >= star_slots:
+                break
+            if player.get("Name", "") in used_players:
+                continue
+            
+            for pos in premium_positions:
+                if self.lineup.get(pos) is None:
+                    self.add_to_lineup(player, pos)
+                    used_players.add(player.get("Name", ""))
+                    filled += 1
+                    break
+    
     def _map_identity_to_archetype(self, identity):
         """Map user-friendly identity names to archetype keys."""
         identity_map = {
@@ -701,7 +994,7 @@ class RosterBuilder:
         }
         return identity_map.get(identity, None)
     
-    def _fill_rotation_random(self, competitive_level, salary_tier, identity, used_players):
+    def _fill_rotation_random(self, competitive_level, salary_tier, identity, used_players, expansion_config=None):
         """Fill rotation slots with weighted random selection."""
         candidate_count = _get_candidate_pool_size("rotation", competitive_level, salary_tier)
             
@@ -713,12 +1006,12 @@ class RosterBuilder:
                                                         competitive_level, salary_tier)
             if candidates:
                 weights = self._calculate_weights(candidates, competitive_level, 
-                                                   salary_tier, identity, "pitcher")
+                                                   salary_tier, identity, "pitcher", expansion_config)
                 selected = random.choices(candidates, weights=weights, k=1)[0]
                 self.add_to_rotation(selected)
                 used_players.add(selected.get("Name", ""))
     
-    def _fill_bullpen_random(self, competitive_level, salary_tier, identity, used_players):
+    def _fill_bullpen_random(self, competitive_level, salary_tier, identity, used_players, expansion_config=None):
         """Fill bullpen slots with weighted random selection."""
         candidate_count = _get_candidate_pool_size("bullpen", competitive_level, salary_tier)
             
@@ -730,12 +1023,12 @@ class RosterBuilder:
                                                         competitive_level, salary_tier)
             if candidates:
                 weights = self._calculate_weights(candidates, competitive_level, 
-                                                   salary_tier, identity, "pitcher")
+                                                   salary_tier, identity, "pitcher", expansion_config)
                 selected = random.choices(candidates, weights=weights, k=1)[0]
                 self.add_to_bullpen(selected)
                 used_players.add(selected.get("Name", ""))
     
-    def _fill_bench_random(self, competitive_level, salary_tier, identity, used_players):
+    def _fill_bench_random(self, competitive_level, salary_tier, identity, used_players, expansion_config=None):
         """Fill bench slots with weighted random selection, preferring versatile players."""
         candidate_count = _get_candidate_pool_size("bench", competitive_level, salary_tier)
             
@@ -766,7 +1059,7 @@ class RosterBuilder:
             
             if unique_candidates:
                 weights = self._calculate_weights(unique_candidates, competitive_level, 
-                                                   salary_tier, identity, "batter")
+                                                   salary_tier, identity, "batter", expansion_config)
                 selected = random.choices(unique_candidates, weights=weights, k=1)[0]
                 self.add_to_bench(selected)
                 used_players.add(selected.get("Name", ""))

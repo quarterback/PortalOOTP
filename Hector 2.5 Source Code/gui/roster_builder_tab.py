@@ -60,6 +60,14 @@ def add_roster_builder_tab(notebook, font):
         fg="#00ff7f"
     ).pack(side="left", padx=10, pady=5)
     
+    tk.Label(
+        auto_gen_frame,
+        text="(All options combine × multiplicatively)",
+        font=(font[0], font[1] - 1),
+        bg="#2a2a2a",
+        fg="#aaaaaa"  # Higher contrast for accessibility
+    ).pack(side="left", padx=(0, 10), pady=5)
+    
     # Competitive Level dropdown
     tk.Label(
         auto_gen_frame,
@@ -92,7 +100,7 @@ def add_roster_builder_tab(notebook, font):
     salary_combo = ttk.Combobox(
         auto_gen_frame,
         textvariable=salary_var,
-        values=["Big spender", "Mid-market", "Budget"],
+        values=["Big spender", "Mid-market", "Budget", "Cheapskate"],
         state="readonly",
         width=12
     )
@@ -118,13 +126,33 @@ def add_roster_builder_tab(notebook, font):
     )
     identity_combo.pack(side="left", padx=5, pady=5)
     
+    # Expansion Mode dropdown
+    tk.Label(
+        auto_gen_frame,
+        text="Expansion:",
+        font=font,
+        bg="#2a2a2a",
+        fg="#d4d4d4"
+    ).pack(side="left", padx=(15, 5), pady=5)
+    
+    expansion_var = tk.StringVar(value="Off")
+    expansion_combo = ttk.Combobox(
+        auto_gen_frame,
+        textvariable=expansion_var,
+        values=["Off", "Year-3 Contender", "Prospect-Heavy", "Stars-and-Scrubs", "Competent Floor"],
+        state="readonly",
+        width=15
+    )
+    expansion_combo.pack(side="left", padx=5, pady=5)
+    
     # Generate button
     def do_auto_generate():
         """Execute auto-generate with current settings"""
         roster_builder.auto_generate_roster(
             competitive_level=competitive_var.get(),
             salary_tier=salary_var.get(),
-            identity=identity_var.get()
+            identity=identity_var.get(),
+            expansion_mode=expansion_var.get()
         )
         update_roster_display()
         update_pool_table()
