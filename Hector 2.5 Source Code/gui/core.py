@@ -170,7 +170,13 @@ def build_gui():
                 teams_by_abbr = build_teams_by_abbr(teams_list)
                 return teams_by_abbr, True
             return {}, False
-        except Exception:
+        except (ValueError, IOError, UnicodeDecodeError) as e:
+            # Log specific parsing errors but continue gracefully
+            print(f"Warning: Could not parse Team List.html: {e}")
+            return {}, False
+        except Exception as e:
+            # Catch unexpected errors but don't crash the app
+            print(f"Warning: Unexpected error loading team data: {e}")
             return {}, False
 
     def choose_and_load_file(result):

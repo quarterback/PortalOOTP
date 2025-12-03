@@ -158,22 +158,27 @@ def get_park_factor_context(team_data, stat_type="HR"):
     if not isinstance(factor, (int, float)):
         factor = parse_number(factor)
     
-    if factor == 0:
+    # Default to 1.0 if factor is 0 or invalid
+    if factor == 0 or factor is None:
         factor = 1.0
+    
+    # Calculate percentage change with consistent formatting
+    pct_change = int((factor - 1) * 100)
+    pct_str = f"{pct_change:+d}%" if pct_change != 0 else "0%"
     
     # Interpret the park factor
     if factor < 0.85:
         pf_type = "pitcher_friendly"
-        effect = f"Suppresses {stat_type} significantly ({int((factor - 1) * 100)}%)"
+        effect = f"Suppresses {stat_type} significantly ({pct_str})"
     elif factor < 0.95:
         pf_type = "slightly_pitcher_friendly"
-        effect = f"Slightly suppresses {stat_type} ({int((factor - 1) * 100)}%)"
+        effect = f"Slightly suppresses {stat_type} ({pct_str})"
     elif factor > 1.15:
         pf_type = "hitter_friendly"
-        effect = f"Boosts {stat_type} significantly (+{int((factor - 1) * 100)}%)"
+        effect = f"Boosts {stat_type} significantly ({pct_str})"
     elif factor > 1.05:
         pf_type = "slightly_hitter_friendly"
-        effect = f"Slightly boosts {stat_type} (+{int((factor - 1) * 100)}%)"
+        effect = f"Slightly boosts {stat_type} ({pct_str})"
     else:
         pf_type = "neutral"
         effect = f"Neutral for {stat_type}"
