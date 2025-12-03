@@ -425,15 +425,26 @@ class RosterBuilder:
                      or archetype keys like "mashers", "speed_defense", etc.
         
         Each call produces a different roster due to weighted randomness.
+        All three options (competitive_level, salary_tier, identity) are applied together.
         """
         self.clear_roster()
         
         # Track used players to avoid duplicates
         used_players = set()
         
+        # Determine candidate pool size based on competitive level
+        # Rebuilding/Budget teams need access to a much larger pool to find cheap/young players
+        if competitive_level == "Rebuilding" or salary_tier == "Budget":
+            candidate_count = 50  # Look through more players
+        elif competitive_level == "Contender" or salary_tier == "Big spender":
+            candidate_count = 20  # Still some variety for contenders
+        else:
+            candidate_count = 30  # Middle of the pack
+        
         # Fill lineup positions
         for pos in LINEUP_SLOTS:
-            candidates = self._get_position_candidates(pos, 10, "batter", used_players)
+            candidates = self._get_position_candidates(pos, candidate_count, "batter", used_players,
+                                                        competitive_level, salary_tier)
             if candidates:
                 weights = self._calculate_weights(candidates, competitive_level, 
                                                    salary_tier, identity, "batter")
@@ -450,18 +461,22 @@ class RosterBuilder:
         # Fill bench
         self._fill_bench_random(competitive_level, salary_tier, identity, used_players)
     
-    def _get_position_candidates(self, position, count, player_type, used_players):
+    def _get_position_candidates(self, position, count, player_type, used_players,
+                                  competitive_level="Middle of the pack", salary_tier="Mid-market"):
         """
-        Get top N candidate players for a position, excluding already used players.
+        Get candidate players for a position, excluding already used players.
+        The pool and sorting depends on competitive_level and salary_tier.
         
         Args:
             position: Position to find candidates for (C, 1B, SP, RP, etc.)
             count: Number of candidates to return
             player_type: "batter" or "pitcher"
             used_players: Set of player names already on roster
+            competitive_level: "Contender", "Middle of the pack", or "Rebuilding"
+            salary_tier: "Big spender", "Mid-market", or "Budget"
         
         Returns:
-            List of player dicts sorted by OVR
+            List of player dicts - the sorting depends on team philosophy
         """
         candidates = []
         
@@ -491,8 +506,40 @@ class RosterBuilder:
             
             candidates.append(player)
         
-        # Sort by OVR descending and return top N
-        candidates.sort(key=lambda p: parse_star_rating(p.get("OVR", "0")), reverse=True)
+        # Sort strategy depends on team philosophy - this affects which players 
+        # make it into the candidate pool
+        if competitive_level == "Rebuilding":
+            # For rebuilding: prioritize young players with high potential
+            # Sort by age (ascending) first, then by potential (descending)
+            candidates.sort(key=lambda p: (
+                get_age(p),  # Younger first
+                -parse_star_rating(p.get("POT", "0"))  # Then high potential
+            ))
+        elif salary_tier == "Budget":
+            # For budget: prioritize low salary players
+            # Sort by salary (ascending), then by OVR (descending)
+            candidates.sort(key=lambda p: (
+                parse_salary(p.get("SLR", 0)),  # Cheaper first
+                -parse_star_rating(p.get("OVR", "0"))  # Then high OVR within salary tier
+            ))
+        elif competitive_level == "Contender" or salary_tier == "Big spender":
+            # For contenders: prioritize high OVR players
+            candidates.sort(key=lambda p: parse_star_rating(p.get("OVR", "0")), reverse=True)
+        else:
+            # Middle of the pack: mix of OVR and value
+            # Sort by a blend of OVR and age (prefer prime-age players)
+            def middle_sort_key(p):
+                ovr = parse_star_rating(p.get("OVR", "0"))
+                age = get_age(p)
+                # Prefer players aged 25-30 (prime years)
+                age_bonus = 0
+                if 25 <= age <= 30:
+                    age_bonus = 10
+                elif 23 <= age <= 32:
+                    age_bonus = 5
+                return ovr + age_bonus
+            candidates.sort(key=middle_sort_key, reverse=True)
+        
         return candidates[:count]
     
     def _calculate_weights(self, candidates, competitive_level, salary_tier, 
@@ -504,6 +551,10 @@ class RosterBuilder:
         - Competitive level (favors high OVR for contenders, youth for rebuilding)
         - Salary tier (favors budget contracts or allows premium spending)
         - Identity (boosts players matching requested archetype)
+        
+        All three factors are combined multiplicatively, so selecting 
+        "Rebuilding" + "Budget" + "Youth-focused" will strongly favor 
+        young, cheap players with high potential.
         
         Returns:
             List of weights corresponding to each candidate
@@ -517,53 +568,75 @@ class RosterBuilder:
             ovr = parse_star_rating(player.get("OVR", "0"))
             ovr_normalized = normalize_rating(ovr)
             pot = parse_star_rating(player.get("POT", "0"))
+            pot_normalized = normalize_rating(pot)
             age = get_age(player)
             salary = parse_salary(player.get("SLR", 0))
             
             # Competitive level adjustments
             if competitive_level == "Contender":
-                # Favor high OVR players
-                if ovr_normalized >= 70:
-                    weight *= 2.0
+                # Strongly favor high OVR players, penalize low OVR
+                if ovr_normalized >= 75:
+                    weight *= 4.0
+                elif ovr_normalized >= 70:
+                    weight *= 3.0
                 elif ovr_normalized >= 65:
-                    weight *= 1.5
+                    weight *= 2.0
                 elif ovr_normalized >= 60:
-                    weight *= 1.2
+                    weight *= 1.5
+                elif ovr_normalized < 55:
+                    weight *= 0.3  # Stronger penalty for weak players
                 elif ovr_normalized < 50:
-                    weight *= 0.5
+                    weight *= 0.1
             elif competitive_level == "Rebuilding":
-                # Favor younger players with upside
-                if age <= 25:
-                    weight *= 1.8
+                # Strongly favor younger players with upside, penalize older players
+                if age <= 23:
+                    weight *= 3.0  # Strongest boost for very young
+                elif age <= 25:
+                    weight *= 2.5
                 elif age <= 27:
-                    weight *= 1.3
-                elif age >= 32:
-                    weight *= 0.5
+                    weight *= 1.5
+                elif age >= 33:
+                    weight *= 0.1  # Strong penalty for old players
+                elif age >= 30:
+                    weight *= 0.3
                 # Favor high potential
-                pot_normalized = normalize_rating(pot)
-                if pot_normalized >= 70:
+                if pot_normalized >= 75:
+                    weight *= 2.5
+                elif pot_normalized >= 70:
+                    weight *= 2.0
+                elif pot_normalized >= 65:
                     weight *= 1.5
                 elif pot_normalized >= 60:
                     weight *= 1.2
+                # Slight penalty for high OVR (want players not yet at peak)
+                if ovr_normalized >= 75:
+                    weight *= 0.7
             # "Middle of the pack" uses balanced weights (no major adjustments)
+            # but still applies salary and identity modifiers
             
             # Salary tier adjustments
             if salary_tier == "Budget":
-                # Reduce weight for high-salary players
+                # Strongly reduce weight for high-salary players
                 if salary >= 25:
-                    weight *= 0.3
+                    weight *= 0.05  # Almost never pick $25M+ players
                 elif salary >= 15:
-                    weight *= 0.5
-                elif salary >= 8:
-                    weight *= 0.7
+                    weight *= 0.15
+                elif salary >= 10:
+                    weight *= 0.3
+                elif salary >= 5:
+                    weight *= 0.6
                 elif salary <= 1:
-                    weight *= 1.5
+                    weight *= 2.5  # Strong boost for minimum salary
+                elif salary <= 3:
+                    weight *= 1.8
             elif salary_tier == "Big spender":
-                # Slight boost for star players (who tend to be expensive)
-                if ovr_normalized >= 70:
-                    weight *= 1.3
+                # Boost for star players (who tend to be expensive)
+                if ovr_normalized >= 75:
+                    weight *= 2.0
+                elif ovr_normalized >= 70:
+                    weight *= 1.5
                 elif ovr_normalized >= 65:
-                    weight *= 1.1
+                    weight *= 1.2
             # "Mid-market" uses balanced approach (no major salary adjustments)
             
             # Identity/archetype adjustments
@@ -606,11 +679,20 @@ class RosterBuilder:
     
     def _fill_rotation_random(self, competitive_level, salary_tier, identity, used_players):
         """Fill rotation slots with weighted random selection."""
+        # Determine candidate pool size based on competitive level
+        if competitive_level == "Rebuilding" or salary_tier == "Budget":
+            candidate_count = 30
+        elif competitive_level == "Contender" or salary_tier == "Big spender":
+            candidate_count = 15
+        else:
+            candidate_count = 20
+            
         for _ in range(ROTATION_COUNT):
             if len(self.rotation) >= ROTATION_COUNT:
                 break
             
-            candidates = self._get_position_candidates("SP", 10, "pitcher", used_players)
+            candidates = self._get_position_candidates("SP", candidate_count, "pitcher", used_players,
+                                                        competitive_level, salary_tier)
             if candidates:
                 weights = self._calculate_weights(candidates, competitive_level, 
                                                    salary_tier, identity, "pitcher")
@@ -620,11 +702,20 @@ class RosterBuilder:
     
     def _fill_bullpen_random(self, competitive_level, salary_tier, identity, used_players):
         """Fill bullpen slots with weighted random selection."""
+        # Determine candidate pool size based on competitive level
+        if competitive_level == "Rebuilding" or salary_tier == "Budget":
+            candidate_count = 40
+        elif competitive_level == "Contender" or salary_tier == "Big spender":
+            candidate_count = 20
+        else:
+            candidate_count = 25
+            
         for _ in range(BULLPEN_COUNT):
             if len(self.bullpen) >= BULLPEN_COUNT:
                 break
             
-            candidates = self._get_position_candidates("RP", 15, "pitcher", used_players)
+            candidates = self._get_position_candidates("RP", candidate_count, "pitcher", used_players,
+                                                        competitive_level, salary_tier)
             if candidates:
                 weights = self._calculate_weights(candidates, competitive_level, 
                                                    salary_tier, identity, "pitcher")
@@ -634,6 +725,14 @@ class RosterBuilder:
     
     def _fill_bench_random(self, competitive_level, salary_tier, identity, used_players):
         """Fill bench slots with weighted random selection, preferring versatile players."""
+        # Determine candidate pool size based on competitive level
+        if competitive_level == "Rebuilding" or salary_tier == "Budget":
+            candidate_count = 15
+        elif competitive_level == "Contender" or salary_tier == "Big spender":
+            candidate_count = 8
+        else:
+            candidate_count = 10
+            
         for i in range(BENCH_COUNT):
             if len(self.bench) >= BENCH_COUNT:
                 break
@@ -646,7 +745,8 @@ class RosterBuilder:
             for pos in LINEUP_SLOTS:
                 if pos == "DH":
                     continue  # Skip DH for bench
-                candidates = self._get_position_candidates(pos, 5, "batter", used_players)
+                candidates = self._get_position_candidates(pos, candidate_count, "batter", used_players,
+                                                            competitive_level, salary_tier)
                 all_candidates.extend(candidates)
             
             # Remove duplicates while preserving order
