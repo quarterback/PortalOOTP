@@ -8,6 +8,7 @@ from .style import on_treeview_motion, on_leave, sort_treeview
 from .widgets import (
     make_treeview_open_link_handler,
     load_player_url_template,
+    bind_player_card_right_click,
 )
 from .tooltips import add_button_tooltip
 from trade_value import parse_number, parse_years_left, get_contract_status, parse_salary
@@ -168,6 +169,15 @@ def add_trade_builder_tab(notebook, font):
     player_table._prev_hover = None
     player_table.bind("<Motion>", on_treeview_motion)
     player_table.bind("<Leave>", on_leave)
+    
+    # Player type detection for right-click
+    PITCHER_POSITIONS = {"SP", "RP", "CL", "P"}
+    def get_player_type(player):
+        pos = player.get("POS", "").upper()
+        return "pitcher" if pos in PITCHER_POSITIONS else "batter"
+    
+    # Bind right-click for player card popup
+    bind_player_card_right_click(player_table, assets_id_map, lambda p: (p, get_player_type(p)))
     
     # Selected Assets Section
     selected_assets_frame = tk.Frame(left_panel, bg="#1e1e1e", relief="groove", bd=1)
@@ -375,6 +385,9 @@ def add_trade_builder_tab(notebook, font):
     results_table._prev_hover = None
     results_table.bind("<Motion>", on_treeview_motion)
     results_table.bind("<Leave>", on_leave)
+    
+    # Bind right-click for player card popup (results table)
+    bind_player_card_right_click(results_table, results_id_map, lambda p: (p, get_player_type(p)))
     
     # Selected Targets Section
     selected_targets_frame = tk.Frame(right_panel, bg="#1e1e1e", relief="groove", bd=1)

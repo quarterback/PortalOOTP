@@ -201,6 +201,18 @@ Percentiles are shown with visual bars and tier indicators:
 
 Percentile data is calculated automatically when data is loaded. Right-click on any player to view their full percentile breakdown in a player card popup.
 
+### Player Card Popup
+
+Right-click (or Ctrl+click on Mac) on any player row in any table throughout the application to view a detailed player card:
+
+- **Header**: Player name, team, position, age, handedness
+- **OVR/POT**: Current overall and potential ratings
+- **Percentile Rankings**: Visual bars showing where the player ranks for each stat (90th+ = Elite, 75-89 = Good, etc.)
+- **Best/Worst Stats**: Quick summary of the player's strongest and weakest percentile rankings
+- **Archetype Fits**: Shows which team-building archetypes the player fits and their fit scores
+
+This feature works in all tabs with player tables: Batters, Pitchers, Hidden Gems, Trade Tab, Trade Finder, Trade Builder, Contract, Contract Value, Roster Builder, and Platoon Finder.
+
 ---
 
 ## Hidden Gems Finder
@@ -224,7 +236,9 @@ The Hidden Gems tab helps find overlooked players across the league who deserve 
 1. Navigate to the **Hidden Gems** tab
 2. Select a category from the dropdown or click on a category card
 3. Optionally filter by position
-4. Double-click any player to open their Stats+ page
+4. Optionally filter by archetype to find players matching your team-building philosophy
+5. Right-click any player to view their detailed player card
+6. Double-click any player to open their Stats+ page
 
 ---
 
@@ -234,6 +248,8 @@ The Hidden Gems tab helps find overlooked players across the league who deserve 
 Franchise Archetypes help you find players that fit your desired team-building philosophy.
 
 ### Available Archetypes
+
+#### Traditional Archetypes
 
 | Archetype | Icon | Description |
 |-----------|------|-------------|
@@ -245,6 +261,21 @@ Franchise Archetypes help you find players that fit your desired team-building p
 | **Budget Build** | 💰 | High WAR/$ ratio, pre-arb or arbitration, AAV <$5M |
 | **Balanced** | ⚖️ | No glaring weaknesses, all ratings ≥45 |
 
+#### Unconventional Archetypes
+
+| Archetype | Icon | Description | Key Criteria |
+|-----------|------|-------------|--------------|
+| **Chaos Ball** | 🎲 | High variance boom-or-bust | High K% + high ISO, high power, low contact |
+| **Small Ball** | ⚾ | Contact, bunting, manufacturing runs | Low K%, high STE, high CON, good bunting |
+| **Ace Hunter** | 🎯 | Build around elite SP | Target elite SP (OVR 70+), stuff ≥70 |
+| **Bullpen-First** | 🔥 | Elite relievers over rotation | Strong RP/CL focus, high stuff |
+| **Platoon Army** | 🔄 | Maximize L/R platoon advantages | Players with big L/R splits, platoon-range OVR |
+| **Launch Angle Era** | 🚀 | Three true outcomes only | High HR, BB, K - ignore AVG/contact |
+| **Defense Wins** | 🛡️ | Elite defense priority | Premium positions (C, SS, CF), accept weaker bats |
+| **Prospect Pipeline** | 🌾 | Perpetual rebuild, always flipping | Age ≤24, high POT, POT-OVR gap ≥15 |
+| **Veteran Presence** | 👨‍🦳 | Experienced leadership roster | Age 30+, high OVR, proven production |
+| **Innings Eaters** | 🍽️ | High stamina, durable pitchers | STM ≥60, durable health status, SP only |
+
 ### Fit Scores
 
 Each player receives a fit score (0-100) for each archetype:
@@ -252,6 +283,15 @@ Each player receives a fit score (0-100) for each archetype:
 - **60-79**: Good fit
 - **40-59**: Partial fit
 - **Below 40**: Not a fit
+
+### Using Archetypes
+
+Archetypes are integrated throughout the tool:
+
+1. **Player Card Popup**: Right-click (or Ctrl+click) any player in any table to see their full percentile breakdown and archetype fits
+2. **Roster Builder**: Auto-detects the best archetype fit for your constructed roster
+3. **Hidden Gems Tab**: Filter hidden gems by best-fit archetype
+4. **Trade Finder Tab**: Filter surplus value players by archetype to find targeted trade fits
 
 ---
 

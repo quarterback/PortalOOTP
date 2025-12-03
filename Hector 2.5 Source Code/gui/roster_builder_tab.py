@@ -4,7 +4,7 @@
 import tkinter as tk
 from tkinter import ttk
 from .style import on_treeview_motion, on_leave, sort_treeview
-from .widgets import make_treeview_open_link_handler, load_player_url_template
+from .widgets import make_treeview_open_link_handler, load_player_url_template, bind_player_card_right_click
 from roster_builder import (
     RosterBuilder, LINEUP_SLOTS, BENCH_COUNT, ROTATION_COUNT, BULLPEN_COUNT,
     find_trade_targets_by_position, get_availability_tier
@@ -249,6 +249,16 @@ def add_roster_builder_tab(notebook, font):
     pool_table.bind("<Leave>", on_leave)
     
     pool_id_map = {}
+    pool_player_data_map = {}  # Maps iid -> player dict for right-click
+    
+    # Player type detection for right-click
+    PITCHER_POSITIONS = {"SP", "RP", "CL", "P"}
+    def get_player_type(player):
+        pos = player.get("POS", "").upper()
+        return "pitcher" if pos in PITCHER_POSITIONS else "batter"
+    
+    # Bind right-click for player card popup
+    bind_player_card_right_click(pool_table, pool_player_data_map, lambda p: (p, get_player_type(p)))
     
     # Add to roster buttons
     add_btn_frame = tk.Frame(left_frame, bg="#1e1e1e")
@@ -628,6 +638,7 @@ def add_roster_builder_tab(notebook, font):
         """Update the player pool table"""
         pool_table.delete(*pool_table.get_children())
         pool_id_map.clear()
+        pool_player_data_map.clear()
         
         pos_filter = pos_var.get()
         team_filter = team_var.get()
@@ -684,6 +695,7 @@ def add_roster_builder_tab(notebook, font):
             player_id = player.get("ID", "")
             if player_id:
                 pool_id_map[iid] = player_id
+            pool_player_data_map[iid] = player
         
         make_treeview_open_link_handler(pool_table, pool_id_map, lambda pid: player_url_template.format(pid=pid))
     

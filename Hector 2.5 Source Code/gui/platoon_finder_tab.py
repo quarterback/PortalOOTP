@@ -4,6 +4,7 @@ from .style import on_treeview_motion, on_leave, sort_treeview
 from .widgets import (
     make_treeview_open_link_handler,
     load_player_url_template,
+    bind_player_card_right_click,
 )
 from .tooltips import add_button_tooltip
 
@@ -250,6 +251,10 @@ def add_platoon_finder_tab(notebook, font):
     dh_table.bind("<Leave>", on_leave)
     
     dh_id_map = {}
+    dh_player_data_map = {}  # Maps iid -> player dict for right-click
+    
+    # Bind right-click for player card popup (DH table - all batters)
+    bind_player_card_right_click(dh_table, dh_player_data_map, lambda p: (p, "batter"))
     
     # ========== Section 3: Switch Hitters ==========
     switch_section = tk.Frame(sections_notebook, bg="#1e1e1e")
@@ -331,6 +336,10 @@ def add_platoon_finder_tab(notebook, font):
     switch_table.bind("<Leave>", on_leave)
     
     switch_id_map = {}
+    switch_player_data_map = {}  # Maps iid -> player dict for right-click
+    
+    # Bind right-click for player card popup (switch hitters - all batters)
+    bind_player_card_right_click(switch_table, switch_player_data_map, lambda p: (p, "batter"))
     
     def get_teams():
         """Get unique team names from batters"""
@@ -569,6 +578,7 @@ def add_platoon_finder_tab(notebook, font):
         """Update the DH candidates table"""
         dh_table.delete(*dh_table.get_children())
         dh_id_map.clear()
+        dh_player_data_map.clear()
         
         candidates = find_dh_candidates()
         
@@ -594,6 +604,7 @@ def add_platoon_finder_tab(notebook, font):
             player_id = c["player"].get("ID", "")
             if player_id:
                 dh_id_map[iid] = player_id
+            dh_player_data_map[iid] = c["player"]
         
         make_treeview_open_link_handler(dh_table, dh_id_map, lambda pid: player_url_template.format(pid=pid))
     
@@ -601,6 +612,7 @@ def add_platoon_finder_tab(notebook, font):
         """Update the switch hitters table"""
         switch_table.delete(*switch_table.get_children())
         switch_id_map.clear()
+        switch_player_data_map.clear()
         
         switch_hitters = find_switch_hitters()
         
@@ -627,6 +639,7 @@ def add_platoon_finder_tab(notebook, font):
             player_id = s["player"].get("ID", "")
             if player_id:
                 switch_id_map[iid] = player_id
+            switch_player_data_map[iid] = s["player"]
         
         make_treeview_open_link_handler(switch_table, switch_id_map, lambda pid: player_url_template.format(pid=pid))
     

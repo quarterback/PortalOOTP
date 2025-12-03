@@ -4,6 +4,7 @@ from .style import on_treeview_motion, on_leave, sort_treeview
 from .widgets import (
     make_treeview_open_link_handler,
     load_player_url_template,
+    bind_player_card_right_click,
 )
 from .tooltips import add_button_tooltip
 from trade_value import (
@@ -182,6 +183,16 @@ def add_contract_value_tab(notebook, font):
     table.bind("<Leave>", on_leave)
     
     id_map = {}
+    player_data_map = {}  # Maps iid -> player dict for right-click
+    
+    # Player type detection for right-click
+    PITCHER_POSITIONS = {"SP", "RP", "CL", "P"}
+    def get_player_type_from_data(player_data):
+        ptype = player_data.get("type", "batter")
+        return ptype
+    
+    # Bind right-click for player card popup
+    bind_player_card_right_click(table, player_data_map, lambda p: (p["player"], p["type"]))
     
     def get_tag_for_category(category):
         """Get row tag based on category"""
@@ -335,6 +346,7 @@ def add_contract_value_tab(notebook, font):
         """Update the table with current filter settings"""
         table.delete(*table.get_children())
         id_map.clear()
+        player_data_map.clear()
         
         players = get_filtered_players()
         
@@ -361,6 +373,7 @@ def add_contract_value_tab(notebook, font):
             player_id = p["player"].get("ID", "")
             if player_id:
                 id_map[iid] = player_id
+            player_data_map[iid] = p
         
         make_treeview_open_link_handler(table, id_map, lambda pid: player_url_template.format(pid=pid))
     
@@ -507,6 +520,10 @@ def add_contract_value_tab(notebook, font):
     ext_table.bind("<Leave>", on_leave)
     
     ext_id_map = {}
+    ext_player_data_map = {}  # Maps iid -> player data for right-click
+    
+    # Bind right-click for player card popup (extension table)
+    bind_player_card_right_click(ext_table, ext_player_data_map, lambda p: (p["player"], p["type"]))
     
     def get_players_with_extensions():
         """Get all players with extensions"""
@@ -569,6 +586,7 @@ def add_contract_value_tab(notebook, font):
         """Update the extension watch table"""
         ext_table.delete(*ext_table.get_children())
         ext_id_map.clear()
+        ext_player_data_map.clear()
         
         players = get_players_with_extensions()
         
@@ -595,6 +613,7 @@ def add_contract_value_tab(notebook, font):
             player_id = p["player"].get("ID", "")
             if player_id:
                 ext_id_map[iid] = player_id
+            ext_player_data_map[iid] = p
         
         make_treeview_open_link_handler(ext_table, ext_id_map, lambda pid: player_url_template.format(pid=pid))
     

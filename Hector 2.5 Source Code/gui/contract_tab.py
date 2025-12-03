@@ -4,6 +4,7 @@ from .style import on_treeview_motion, on_leave
 from .widgets import (
     make_treeview_open_link_handler,
     load_player_url_template,
+    bind_player_card_right_click,
 )
 
 player_url_template = load_player_url_template()
