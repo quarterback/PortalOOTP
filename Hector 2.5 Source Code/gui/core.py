@@ -50,7 +50,7 @@ PITCHER_POSITIONS = {"P", "SP", "RP", "CL"}
 BATTER_POSITIONS = {"C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"}
 
 NEON_GREEN = "#29ff9e"
-DARK_BG = "#1e1e1e"
+DARK_BG = "#2d2d2d"
 
 def get_weights_dir():
     if getattr(sys, 'frozen', False):
@@ -139,7 +139,7 @@ def split_players_by_type(players):
 def build_gui():
     root = tk.Tk()
     set_app_icon(root)
-    root.title("Hector 2.4")
+    root.title("Hector 2.7")
     root.geometry("1800x950")
     root.configure(bg=DARK_BG)
 
@@ -303,7 +303,7 @@ def build_gui():
         
         if not after_reload:
             # Main UI
-            title = create_title_label(root, font, "Hector 2.4 - OOTP Analyzer")
+            title = create_title_label(root, font, "Hector 2.7 - OOTP Analyzer")
             title.pack(fill="x", padx=10, pady=5)
             summary_frame, summary_left_var, summary_right_var = create_summary_widgets(root, font)
             summary_frame.pack(fill="x", padx=10)

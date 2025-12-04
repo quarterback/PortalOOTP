@@ -7,17 +7,17 @@ def setup_theme(font, root):
     # Option 1: Try 'alt' theme
     style.theme_use('clam')
     
-    style.configure('.', background='#1e1e1e', foreground='#d4d4d4', fieldbackground='#1e1e1e', font=font)
-    style.configure('TFrame', background='#1e1e1e', bordercolor='#1e1e1e')
-    style.configure('TLabel', background='#1e1e1e', foreground='#d4d4d4')
-    style.configure('TCheckbutton', background='#1e1e1e', bordercolor='#1e1e1e')
+    style.configure('.', background='#2d2d2d', foreground='#e0e0e0', fieldbackground='#2d2d2d', font=font)
+    style.configure('TFrame', background='#2d2d2d', bordercolor='#2d2d2d')
+    style.configure('TLabel', background='#2d2d2d', foreground='#e0e0e0')
+    style.configure('TCheckbutton', background='#2d2d2d', bordercolor='#2d2d2d')
     
     # Treeview
     style.configure('Treeview',
-                    background='#1e1e1e',
-                    foreground='#d4d4d4',
-                    fieldbackground='#1e1e1e',
-                    bordercolor='#1e1e1e',
+                    background='#2d2d2d',
+                    foreground='#e0e0e0',
+                    fieldbackground='#2d2d2d',
+                    bordercolor='#2d2d2d',
                     font=font)
     
     style.map('Treeview',
@@ -36,29 +36,29 @@ def setup_theme(font, root):
               foreground=[
                   ('active', '#00ff7f'),
                   ('pressed', '#00ff7f'),
-                  ('!active', '#d4d4d4')
+                  ('!active', '#e0e0e0')
               ]
     )
     
     # Scrollbars
-    style.configure('Vertical.TScrollbar', background='#1e1e1e', troughcolor='#1e1e1e', bordercolor='#1e1e1e')
-    style.configure('Horizontal.TScrollbar', background='#1e1e1e', troughcolor='#1e1e1e', bordercolor='#1e1e1e')
+    style.configure('Vertical.TScrollbar', background='#2d2d2d', troughcolor='#2d2d2d', bordercolor='#2d2d2d')
+    style.configure('Horizontal.TScrollbar', background='#2d2d2d', troughcolor='#2d2d2d', bordercolor='#2d2d2d')
     
     style.map('Vertical.TScrollbar',
-              background=[('disabled', '#1e1e1e'), ('!disabled', '#000000')],
-              troughcolor=[('disabled', '#1e1e1e'), ('!disabled', '#1e1e1e')],
-              bordercolor=[('disabled', '#1e1e1e'), ('!disabled', '#1e1e1e')])
+              background=[('disabled', '#2d2d2d'), ('!disabled', '#000000')],
+              troughcolor=[('disabled', '#2d2d2d'), ('!disabled', '#2d2d2d')],
+              bordercolor=[('disabled', '#2d2d2d'), ('!disabled', '#2d2d2d')])
     
     style.map('Horizontal.TScrollbar',
-              background=[('disabled', '#1e1e1e'), ('!disabled', '#000000')],
-              troughcolor=[('disabled', '#1e1e1e'), ('!disabled', '#1e1e1e')],
-              bordercolor=[('disabled', '#1e1e1e'), ('!disabled', '#1e1e1e')])
+              background=[('disabled', '#2d2d2d'), ('!disabled', '#000000')],
+              troughcolor=[('disabled', '#2d2d2d'), ('!disabled', '#2d2d2d')],
+              bordercolor=[('disabled', '#2d2d2d'), ('!disabled', '#2d2d2d')])
     
     # Notebook & Tabs
-    style.configure('TNotebook', background='#1e1e1e', borderwidth=0)
+    style.configure('TNotebook', background='#2d2d2d', borderwidth=0)
     style.configure('TNotebook.Tab',
-                    background='#2a2a2a',
-                    foreground='#d4d4d4',
+                    background='#383838',
+                    foreground='#e0e0e0',
                     padding=[10,5])
     
     style.map('TNotebook.Tab',
@@ -66,13 +66,13 @@ def setup_theme(font, root):
               foreground=[('selected', '#00ff7f')])
     
     # Buttons
-    style.configure('TButton', background='#2a2a2a', foreground='#d4d4d4', borderwidth=0)
+    style.configure('TButton', background='#383838', foreground='#e0e0e0', borderwidth=0)
     style.map('TButton',
               background=[('active', '#0078d7')],
               foreground=[('active', '#ffffff')])
     
     # Entry
-    style.configure('TEntry', fieldbackground='#1e1e1e', background='#1e1e1e', foreground='#d4d4d4')
+    style.configure('TEntry', fieldbackground='#2d2d2d', background='#2d2d2d', foreground='#e0e0e0')
     
     style.configure(
         "Neon.Horizontal.TProgressbar",
