@@ -48,33 +48,33 @@ def create_title_label(parent, font, text):
         text=text,
         font=(font[0], font[1]+3, "bold"),
         fg="#00ff7f",
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         anchor="w"
     )
 
 def create_control_frame(parent, reload_callback, font):
-    frame = tk.Frame(parent, bg="#1e1e1e")
+    frame = tk.Frame(parent, bg="#2d2d2d")
     reload_btn = ttk.Button(frame, text="Reload Data", command=reload_callback)
     reload_btn.pack(side="left", padx=5)
     return frame, reload_btn
 
 def create_summary_widgets(parent, font):
-    frame = tk.Frame(parent, bg="#1e1e1e")
+    frame = tk.Frame(parent, bg="#2d2d2d")
     left_var = tk.StringVar()
     left_label = tk.Label(
         frame, textvariable=left_var, font=font,
-        fg="#d4d4d4", bg="#1e1e1e", anchor="w", justify="left")
+        fg="#d4d4d4", bg="#2d2d2d", anchor="w", justify="left")
     left_label.pack(side="left", fill="x", expand=True)
 
     right_var = tk.StringVar()
     right_label = tk.Label(
         frame, textvariable=right_var, font=font,
-        fg="#d4d4d4", bg="#1e1e1e", anchor="ne", justify="left")
+        fg="#d4d4d4", bg="#2d2d2d", anchor="ne", justify="left")
     right_label.pack(side="right", fill="y", padx=(10, 0))
     return frame, left_var, right_var
 
 def add_clear_button(entry, variable):
-    clear_btn = tk.Label(entry.master, text="✕", fg="#aaa", bg="#1e1e1e", cursor="hand2")
+    clear_btn = tk.Label(entry.master, text="✕", fg="#aaa", bg="#2d2d2d", cursor="hand2")
     clear_btn.place_forget()
     def show_hide(*args):
         if variable.get():
@@ -201,7 +201,7 @@ def get_pitcher_highlight_tags(p):
 def add_grouped_position_filters(parent, pos_vars, on_change):
     IF_POSITIONS = ["C", "1B", "2B", "3B", "SS"]
     OF_POSITIONS = ["LF", "CF", "RF"]
-    group_row = tk.Frame(parent, bg="#1e1e1e", highlightthickness=0, highlightbackground="#1e1e1e", bd=0)
+    group_row = tk.Frame(parent, bg="#2d2d2d", highlightthickness=0, highlightbackground="#2d2d2d", bd=0)
     group_row.pack(fill='x', pady=(0, 2))
     if_var = tk.BooleanVar(value=all(pos_vars[p].get() for p in IF_POSITIONS))
     of_var = tk.BooleanVar(value=all(pos_vars[p].get() for p in OF_POSITIONS))
@@ -217,11 +217,11 @@ def add_grouped_position_filters(parent, pos_vars, on_change):
         of_var.set(all(pos_vars[p].get() for p in OF_POSITIONS))
 
     cbargs = dict(
-        bg="#1e1e1e", fg="#d4d4d4", selectcolor="#1e1e1e",
-        activebackground="#1e1e1e", activeforeground="#d4d4d4",
+        bg="#2d2d2d", fg="#d4d4d4", selectcolor="#2d2d2d",
+        activebackground="#2d2d2d", activeforeground="#d4d4d4",
         highlightthickness=0,
-        highlightbackground="#1e1e1e",
-        highlightcolor="#1e1e1e",
+        highlightbackground="#2d2d2d",
+        highlightcolor="#2d2d2d",
         takefocus=0,
         bd=0
     )
@@ -241,21 +241,21 @@ def add_grouped_position_filters(parent, pos_vars, on_change):
     of_cb.pack(side="left", padx=12)
 
     # IF checkboxes
-    if_positions_row = tk.Frame(parent, bg="#1e1e1e", highlightthickness=0, highlightbackground="#1e1e1e", bd=0)
+    if_positions_row = tk.Frame(parent, bg="#2d2d2d", highlightthickness=0, highlightbackground="#2d2d2d", bd=0)
     if_positions_row.pack(fill='x')
     for p in IF_POSITIONS:
         cb = tk.Checkbutton(if_positions_row, text=p, variable=pos_vars[p], command=on_change, **cbargs)
         cb.pack(side="left", padx=3)
         pos_vars[p].trace_add("write", update_group_vars)
     # OF checkboxes
-    of_positions_row = tk.Frame(parent, bg="#1e1e1e", highlightthickness=0, highlightbackground="#1e1e1e", bd=0)
+    of_positions_row = tk.Frame(parent, bg="#2d2d2d", highlightthickness=0, highlightbackground="#2d2d2d", bd=0)
     of_positions_row.pack(fill='x', pady=(3, 0))
     for p in OF_POSITIONS:
         cb = tk.Checkbutton(of_positions_row, text=p, variable=pos_vars[p], command=on_change, **cbargs)
         cb.pack(side="left", padx=3)
         pos_vars[p].trace_add("write", update_group_vars)
     # Single "DH" - FIXED
-    dh_row = tk.Frame(parent, bg="#1e1e1e", highlightthickness=0, highlightbackground="#1e1e1e", bd=0)
+    dh_row = tk.Frame(parent, bg="#2d2d2d", highlightthickness=0, highlightbackground="#2d2d2d", bd=0)
     dh_row.pack(fill='x', pady=(3, 0))
     cb = tk.Checkbutton(dh_row, text="DH", variable=pos_vars["DH"], command=on_change, **cbargs)
     cb.pack(side="left", padx=3)
@@ -390,20 +390,16 @@ def bind_player_card_right_click(table, id_map, player_lookup, player_type_func=
         if not player_data:
             return
         
-        # If player_data is a dict, use it directly
-        # Otherwise, call lookup function
-        if isinstance(player_data, dict):
-            player = player_data
-            player_type = determine_player_type(player)
+        # Always use the player_lookup function to extract the correct player dict
+        # This handles both direct player dicts and wrapper dicts like {"player": ..., "type": ...}
+        result = player_lookup(player_data)
+        if not result:
+            return
+        if isinstance(result, tuple):
+            player, player_type = result
         else:
-            result = player_lookup(player_data)
-            if not result:
-                return
-            if isinstance(result, tuple):
-                player, player_type = result
-            else:
-                player = result
-                player_type = determine_player_type(player)
+            player = result
+            player_type = determine_player_type(player)
         
         # Show player card popup
         root = table.winfo_toplevel()

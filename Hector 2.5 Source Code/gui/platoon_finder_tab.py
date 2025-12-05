@@ -65,7 +65,7 @@ def add_platoon_finder_tab(notebook, font):
     all_batters = []
     
     # Main container with notebook for sections
-    main_container = tk.Frame(platoon_frame, bg="#1e1e1e")
+    main_container = tk.Frame(platoon_frame, bg="#2d2d2d")
     main_container.pack(fill="both", expand=True, padx=5, pady=5)
     
     # Create inner notebook for sections
@@ -73,18 +73,18 @@ def add_platoon_finder_tab(notebook, font):
     sections_notebook.pack(fill="both", expand=True)
     
     # ========== Section 1: Platoon Opportunities ==========
-    platoon_section = tk.Frame(sections_notebook, bg="#1e1e1e")
+    platoon_section = tk.Frame(sections_notebook, bg="#2d2d2d")
     sections_notebook.add(platoon_section, text="⚾ Platoon Pairs")
     
     # Platoon header and filters
-    platoon_header = tk.Frame(platoon_section, bg="#1e1e1e")
+    platoon_header = tk.Frame(platoon_section, bg="#2d2d2d")
     platoon_header.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         platoon_header,
         text="⚾ Platoon Opportunities",
         font=(font[0], font[1] + 2, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     ).pack(side="left")
     
@@ -92,15 +92,15 @@ def add_platoon_finder_tab(notebook, font):
         platoon_header,
         text="Match L-bat and R-bat players at the same position",
         font=(font[0], font[1] - 1),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#888888"
     ).pack(side="left", padx=(10, 0))
     
     # Platoon filters
-    platoon_filter_frame = tk.Frame(platoon_section, bg="#1e1e1e")
+    platoon_filter_frame = tk.Frame(platoon_section, bg="#2d2d2d")
     platoon_filter_frame.pack(fill="x", padx=5, pady=2)
     
-    tk.Label(platoon_filter_frame, text="Position:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(platoon_filter_frame, text="Position:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     platoon_pos_var = tk.StringVar(value="All")
     platoon_pos_combo = ttk.Combobox(
         platoon_filter_frame,
@@ -111,7 +111,7 @@ def add_platoon_finder_tab(notebook, font):
     )
     platoon_pos_combo.pack(side="left", padx=5)
     
-    tk.Label(platoon_filter_frame, text="Team:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
+    tk.Label(platoon_filter_frame, text="Team:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
     platoon_team_var = tk.StringVar(value="All")
     platoon_team_combo = ttk.Combobox(
         platoon_filter_frame,
@@ -122,12 +122,12 @@ def add_platoon_finder_tab(notebook, font):
     )
     platoon_team_combo.pack(side="left", padx=5)
     
-    tk.Label(platoon_filter_frame, text="Min OVR:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
+    tk.Label(platoon_filter_frame, text="Min OVR:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
     platoon_min_ovr_var = tk.StringVar(value="30")
     platoon_min_ovr_entry = tk.Entry(platoon_filter_frame, textvariable=platoon_min_ovr_var, width=5, bg="#000000", fg="#d4d4d4", font=font)
     platoon_min_ovr_entry.pack(side="left", padx=5)
     
-    tk.Label(platoon_filter_frame, text="Max OVR:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
+    tk.Label(platoon_filter_frame, text="Max OVR:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
     platoon_max_ovr_var = tk.StringVar(value="60")
     platoon_max_ovr_entry = tk.Entry(platoon_filter_frame, textvariable=platoon_max_ovr_var, width=5, bg="#000000", fg="#d4d4d4", font=font)
     platoon_max_ovr_entry.pack(side="left", padx=5)
@@ -136,7 +136,7 @@ def add_platoon_finder_tab(notebook, font):
     platoon_update_btn.pack(side="left", padx=10)
     
     # Platoon table
-    platoon_table_frame = tk.Frame(platoon_section, bg="#1e1e1e")
+    platoon_table_frame = tk.Frame(platoon_section, bg="#2d2d2d")
     platoon_table_frame.pack(fill="both", expand=True, padx=5, pady=5)
     
     platoon_vsb = ttk.Scrollbar(platoon_table_frame, orient="vertical")
@@ -173,18 +173,18 @@ def add_platoon_finder_tab(notebook, font):
     platoon_table.bind("<Leave>", on_leave)
     
     # ========== Section 2: DH Candidates ==========
-    dh_section = tk.Frame(sections_notebook, bg="#1e1e1e")
+    dh_section = tk.Frame(sections_notebook, bg="#2d2d2d")
     sections_notebook.add(dh_section, text="🎯 DH Candidates")
     
     # DH header
-    dh_header = tk.Frame(dh_section, bg="#1e1e1e")
+    dh_header = tk.Frame(dh_section, bg="#2d2d2d")
     dh_header.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         dh_header,
         text="🎯 DH Candidates",
         font=(font[0], font[1] + 2, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     ).pack(side="left")
     
@@ -192,20 +192,20 @@ def add_platoon_finder_tab(notebook, font):
         dh_header,
         text="Good batting, poor defense - ideal for DH role",
         font=(font[0], font[1] - 1),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#888888"
     ).pack(side="left", padx=(10, 0))
     
     # DH filters
-    dh_filter_frame = tk.Frame(dh_section, bg="#1e1e1e")
+    dh_filter_frame = tk.Frame(dh_section, bg="#2d2d2d")
     dh_filter_frame.pack(fill="x", padx=5, pady=2)
     
-    tk.Label(dh_filter_frame, text="Min Bat Rating:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(dh_filter_frame, text="Min Bat Rating:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     dh_min_bat_var = tk.StringVar(value="50")
     dh_min_bat_entry = tk.Entry(dh_filter_frame, textvariable=dh_min_bat_var, width=5, bg="#000000", fg="#d4d4d4", font=font)
     dh_min_bat_entry.pack(side="left", padx=5)
     
-    tk.Label(dh_filter_frame, text="Max Def Rating:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
+    tk.Label(dh_filter_frame, text="Max Def Rating:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
     dh_max_def_var = tk.StringVar(value="40")
     dh_max_def_entry = tk.Entry(dh_filter_frame, textvariable=dh_max_def_var, width=5, bg="#000000", fg="#d4d4d4", font=font)
     dh_max_def_entry.pack(side="left", padx=5)
@@ -214,7 +214,7 @@ def add_platoon_finder_tab(notebook, font):
     dh_update_btn.pack(side="left", padx=10)
     
     # DH table
-    dh_table_frame = tk.Frame(dh_section, bg="#1e1e1e")
+    dh_table_frame = tk.Frame(dh_section, bg="#2d2d2d")
     dh_table_frame.pack(fill="both", expand=True, padx=5, pady=5)
     
     dh_vsb = ttk.Scrollbar(dh_table_frame, orient="vertical")
@@ -257,18 +257,18 @@ def add_platoon_finder_tab(notebook, font):
     bind_player_card_right_click(dh_table, dh_player_data_map, lambda p: (p, "batter"))
     
     # ========== Section 3: Switch Hitters ==========
-    switch_section = tk.Frame(sections_notebook, bg="#1e1e1e")
+    switch_section = tk.Frame(sections_notebook, bg="#2d2d2d")
     sections_notebook.add(switch_section, text="🔄 Switch Hitters")
     
     # Switch header
-    switch_header = tk.Frame(switch_section, bg="#1e1e1e")
+    switch_header = tk.Frame(switch_section, bg="#2d2d2d")
     switch_header.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         switch_header,
         text="🔄 Switch Hitters (Platoon-Proof)",
         font=(font[0], font[1] + 2, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     ).pack(side="left")
     
@@ -276,15 +276,15 @@ def add_platoon_finder_tab(notebook, font):
         switch_header,
         text="Switch hitters have extra value - no platoon disadvantage",
         font=(font[0], font[1] - 1),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#888888"
     ).pack(side="left", padx=(10, 0))
     
     # Switch filters
-    switch_filter_frame = tk.Frame(switch_section, bg="#1e1e1e")
+    switch_filter_frame = tk.Frame(switch_section, bg="#2d2d2d")
     switch_filter_frame.pack(fill="x", padx=5, pady=2)
     
-    tk.Label(switch_filter_frame, text="Position:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(switch_filter_frame, text="Position:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     switch_pos_var = tk.StringVar(value="All")
     switch_pos_combo = ttk.Combobox(
         switch_filter_frame,
@@ -299,7 +299,7 @@ def add_platoon_finder_tab(notebook, font):
     switch_update_btn.pack(side="left", padx=10)
     
     # Switch table
-    switch_table_frame = tk.Frame(switch_section, bg="#1e1e1e")
+    switch_table_frame = tk.Frame(switch_section, bg="#2d2d2d")
     switch_table_frame.pack(fill="both", expand=True, padx=5, pady=5)
     
     switch_vsb = ttk.Scrollbar(switch_table_frame, orient="vertical")

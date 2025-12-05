@@ -82,7 +82,7 @@ def add_trade_builder_tab(notebook, font):
     main_container = tk.PanedWindow(
         trade_builder_frame,
         orient="horizontal",
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         sashwidth=4,
         sashrelief="flat"
     )
@@ -91,29 +91,29 @@ def add_trade_builder_tab(notebook, font):
     # ========================================================================
     # Left Panel: Your Trade Assets
     # ========================================================================
-    left_panel = tk.Frame(main_container, bg="#1e1e1e", relief="ridge", bd=2)
+    left_panel = tk.Frame(main_container, bg="#2d2d2d", relief="ridge", bd=2)
     main_container.add(left_panel, width=450)
     
     # Left Panel Header
-    left_header = tk.Frame(left_panel, bg="#1e1e1e")
+    left_header = tk.Frame(left_panel, bg="#2d2d2d")
     left_header.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         left_header,
         text="📤 Your Trade Assets",
         font=(font[0], font[1] + 2, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     ).pack(side="left")
     
     # Team Selector
-    team_selector_frame = tk.Frame(left_panel, bg="#1e1e1e")
+    team_selector_frame = tk.Frame(left_panel, bg="#2d2d2d")
     team_selector_frame.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         team_selector_frame,
         text="Select Your Team:",
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
         font=font
     ).pack(side="left", padx=(0, 5))
@@ -132,7 +132,7 @@ def add_trade_builder_tab(notebook, font):
     clear_selection_btn.pack(side="left", padx=5)
     
     # Player List for Your Team (all players from selected team)
-    player_list_frame = tk.Frame(left_panel, bg="#1e1e1e")
+    player_list_frame = tk.Frame(left_panel, bg="#2d2d2d")
     player_list_frame.pack(fill="both", expand=True, padx=5, pady=5)
     
     # Player list with scrollbars
@@ -180,18 +180,18 @@ def add_trade_builder_tab(notebook, font):
     bind_player_card_right_click(player_table, assets_id_map, lambda p: (p, get_player_type(p)))
     
     # Selected Assets Section
-    selected_assets_frame = tk.Frame(left_panel, bg="#1e1e1e", relief="groove", bd=1)
+    selected_assets_frame = tk.Frame(left_panel, bg="#2d2d2d", relief="groove", bd=1)
     selected_assets_frame.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         selected_assets_frame,
         text="Selected to Trade Away:",
         font=(font[0], font[1], "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#ffd43b"
     ).pack(anchor="w", padx=5, pady=2)
     
-    assets_list_frame = tk.Frame(selected_assets_frame, bg="#1e1e1e")
+    assets_list_frame = tk.Frame(selected_assets_frame, bg="#2d2d2d")
     assets_list_frame.pack(fill="x", padx=5, pady=2)
     
     assets_cols = ("Name", "POS", "Value")
@@ -213,7 +213,7 @@ def add_trade_builder_tab(notebook, font):
         selected_assets_frame,
         textvariable=total_offered_var,
         font=(font[0], font[1], "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     )
     total_offered_label.pack(anchor="w", padx=5, pady=5)
@@ -221,33 +221,33 @@ def add_trade_builder_tab(notebook, font):
     # ========================================================================
     # Right Panel: Trade Targets / Search Results
     # ========================================================================
-    right_panel = tk.Frame(main_container, bg="#1e1e1e", relief="ridge", bd=2)
+    right_panel = tk.Frame(main_container, bg="#2d2d2d", relief="ridge", bd=2)
     main_container.add(right_panel, width=500)
     
     # Right Panel Header
-    right_header = tk.Frame(right_panel, bg="#1e1e1e")
+    right_header = tk.Frame(right_panel, bg="#2d2d2d")
     right_header.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         right_header,
         text="📥 Trade Targets",
         font=(font[0], font[1] + 2, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     ).pack(side="left")
     
     # Filter Controls
-    filter_frame = tk.Frame(right_panel, bg="#1e1e1e")
+    filter_frame = tk.Frame(right_panel, bg="#2d2d2d")
     filter_frame.pack(fill="x", padx=5, pady=5)
     
     # Position filter
-    pos_filter_frame = tk.Frame(filter_frame, bg="#1e1e1e")
+    pos_filter_frame = tk.Frame(filter_frame, bg="#2d2d2d")
     pos_filter_frame.pack(fill="x", pady=2)
     
     tk.Label(
         pos_filter_frame,
         text="Position:",
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
         font=font
     ).pack(side="left")
@@ -266,7 +266,7 @@ def add_trade_builder_tab(notebook, font):
     tk.Label(
         pos_filter_frame,
         text="Age:",
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
         font=font
     ).pack(side="left", padx=(10, 0))
@@ -275,20 +275,20 @@ def add_trade_builder_tab(notebook, font):
     min_age_entry = tk.Entry(pos_filter_frame, textvariable=min_age_var, width=4, bg="#000000", fg="#d4d4d4", font=font)
     min_age_entry.pack(side="left", padx=2)
     
-    tk.Label(pos_filter_frame, text="-", bg="#1e1e1e", fg="#d4d4d4").pack(side="left")
+    tk.Label(pos_filter_frame, text="-", bg="#2d2d2d", fg="#d4d4d4").pack(side="left")
     
     max_age_var = tk.StringVar(value="40")
     max_age_entry = tk.Entry(pos_filter_frame, textvariable=max_age_var, width=4, bg="#000000", fg="#d4d4d4", font=font)
     max_age_entry.pack(side="left", padx=2)
     
     # Team Status filter
-    status_filter_frame = tk.Frame(filter_frame, bg="#1e1e1e")
+    status_filter_frame = tk.Frame(filter_frame, bg="#2d2d2d")
     status_filter_frame.pack(fill="x", pady=2)
     
     tk.Label(
         status_filter_frame,
         text="Team Status:",
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
         font=font
     ).pack(side="left")
@@ -307,7 +307,7 @@ def add_trade_builder_tab(notebook, font):
     tk.Label(
         status_filter_frame,
         text="Min OVR:",
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
         font=font
     ).pack(side="left", padx=(10, 0))
@@ -317,14 +317,14 @@ def add_trade_builder_tab(notebook, font):
     min_ovr_entry.pack(side="left", padx=2)
     
     # Trade Mode Toggle
-    mode_frame = tk.Frame(right_panel, bg="#1e1e1e")
+    mode_frame = tk.Frame(right_panel, bg="#2d2d2d")
     mode_frame.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         mode_frame,
         text="Trade Mode:",
         font=(font[0], font[1], "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4"
     ).pack(side="left")
     
@@ -334,10 +334,10 @@ def add_trade_builder_tab(notebook, font):
             text=f"{mode_info['icon']} {mode_info['name']}",
             variable=trade_mode_var,
             value=mode_key,
-            bg="#1e1e1e",
+            bg="#2d2d2d",
             fg="#d4d4d4",
             selectcolor="#2a2a2a",
-            activebackground="#1e1e1e",
+            activebackground="#2d2d2d",
             activeforeground="#00ff7f",
             font=font
         )
@@ -348,7 +348,7 @@ def add_trade_builder_tab(notebook, font):
     search_btn.pack(side="right", padx=5)
     
     # Results List
-    results_frame = tk.Frame(right_panel, bg="#1e1e1e")
+    results_frame = tk.Frame(right_panel, bg="#2d2d2d")
     results_frame.pack(fill="both", expand=True, padx=5, pady=5)
     
     results_vsb = ttk.Scrollbar(results_frame, orient="vertical")
@@ -390,18 +390,18 @@ def add_trade_builder_tab(notebook, font):
     bind_player_card_right_click(results_table, results_id_map, lambda p: (p, get_player_type(p)))
     
     # Selected Targets Section
-    selected_targets_frame = tk.Frame(right_panel, bg="#1e1e1e", relief="groove", bd=1)
+    selected_targets_frame = tk.Frame(right_panel, bg="#2d2d2d", relief="groove", bd=1)
     selected_targets_frame.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         selected_targets_frame,
         text="Selected to Receive:",
         font=(font[0], font[1], "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#4dabf7"
     ).pack(anchor="w", padx=5, pady=2)
     
-    targets_list_frame = tk.Frame(selected_targets_frame, bg="#1e1e1e")
+    targets_list_frame = tk.Frame(selected_targets_frame, bg="#2d2d2d")
     targets_list_frame.pack(fill="x", padx=5, pady=2)
     
     targets_cols = ("Name", "POS", "Value")
@@ -422,7 +422,7 @@ def add_trade_builder_tab(notebook, font):
         selected_targets_frame,
         textvariable=total_received_var,
         font=(font[0], font[1], "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#4dabf7"
     )
     total_received_label.pack(anchor="w", padx=5, pady=5)
@@ -430,34 +430,34 @@ def add_trade_builder_tab(notebook, font):
     # ========================================================================
     # Bottom Panel: Trade Summary
     # ========================================================================
-    bottom_panel = tk.Frame(trade_builder_frame, bg="#1e1e1e", relief="ridge", bd=2)
+    bottom_panel = tk.Frame(trade_builder_frame, bg="#2d2d2d", relief="ridge", bd=2)
     bottom_panel.pack(fill="x", padx=5, pady=5)
     
     # Trade Summary Header
-    summary_header = tk.Frame(bottom_panel, bg="#1e1e1e")
+    summary_header = tk.Frame(bottom_panel, bg="#2d2d2d")
     summary_header.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         summary_header,
         text="📊 Trade Summary",
         font=(font[0], font[1] + 2, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     ).pack(side="left")
     
     # Side-by-side comparison
-    comparison_frame = tk.Frame(bottom_panel, bg="#1e1e1e")
+    comparison_frame = tk.Frame(bottom_panel, bg="#2d2d2d")
     comparison_frame.pack(fill="x", padx=5, pady=5)
     
     # Left side: Players you're trading away
-    trade_away_frame = tk.Frame(comparison_frame, bg="#1e1e1e")
+    trade_away_frame = tk.Frame(comparison_frame, bg="#2d2d2d")
     trade_away_frame.pack(side="left", fill="both", expand=True)
     
     trade_away_header = tk.Label(
         trade_away_frame,
         text="Trading Away",
         font=(font[0], font[1], "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#ff6b6b"
     )
     trade_away_header.pack(anchor="w")
@@ -465,7 +465,7 @@ def add_trade_builder_tab(notebook, font):
     trade_away_list = tk.Label(
         trade_away_frame,
         text="(No players selected)",
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
         font=font,
         justify="left",
@@ -474,17 +474,17 @@ def add_trade_builder_tab(notebook, font):
     trade_away_list.pack(anchor="w")
     
     # Separator
-    tk.Label(comparison_frame, text="  ⟷  ", bg="#1e1e1e", fg="#d4d4d4", font=(font[0], font[1] + 4)).pack(side="left")
+    tk.Label(comparison_frame, text="  ⟷  ", bg="#2d2d2d", fg="#d4d4d4", font=(font[0], font[1] + 4)).pack(side="left")
     
     # Right side: Players you're receiving
-    receive_frame = tk.Frame(comparison_frame, bg="#1e1e1e")
+    receive_frame = tk.Frame(comparison_frame, bg="#2d2d2d")
     receive_frame.pack(side="left", fill="both", expand=True)
     
     receive_header = tk.Label(
         receive_frame,
         text="Receiving",
         font=(font[0], font[1], "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#51cf66"
     )
     receive_header.pack(anchor="w")
@@ -492,7 +492,7 @@ def add_trade_builder_tab(notebook, font):
     receive_list = tk.Label(
         receive_frame,
         text="(No players selected)",
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
         font=font,
         justify="left",
@@ -501,14 +501,14 @@ def add_trade_builder_tab(notebook, font):
     receive_list.pack(anchor="w")
     
     # Trade Grade
-    grade_frame = tk.Frame(bottom_panel, bg="#1e1e1e")
+    grade_frame = tk.Frame(bottom_panel, bg="#2d2d2d")
     grade_frame.pack(fill="x", padx=5, pady=5)
     
     grade_label = tk.Label(
         grade_frame,
         text="Trade Grade: --",
         font=(font[0], font[1] + 4, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4"
     )
     grade_label.pack(side="left", padx=5)
@@ -517,20 +517,20 @@ def add_trade_builder_tab(notebook, font):
         grade_frame,
         text="",
         font=font,
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#888888"
     )
     grade_description.pack(side="left", padx=10)
     
     # Park Factor Impact Preview
-    park_impact_frame = tk.Frame(bottom_panel, bg="#1e1e1e")
+    park_impact_frame = tk.Frame(bottom_panel, bg="#2d2d2d")
     park_impact_frame.pack(fill="x", padx=5, pady=5)
     
     park_impact_label = tk.Label(
         park_impact_frame,
         text="Park Factor Impact:",
         font=(font[0], font[1], "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#ffd43b"
     )
     park_impact_label.pack(side="left")
@@ -539,7 +539,7 @@ def add_trade_builder_tab(notebook, font):
         park_impact_frame,
         text="(Select players to see park impact preview)",
         font=font,
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#888888"
     )
     park_impact_details.pack(side="left", padx=10)

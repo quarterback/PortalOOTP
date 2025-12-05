@@ -87,7 +87,7 @@ def add_contract_tab(notebook, font):
     
     def create_autocomplete_entry(parent_frame, entryvar, onselect_callback_ref):
         """Create an entry widget with autocomplete dropdown"""
-        entry_frame = tk.Frame(parent_frame, bg="#1e1e1e")
+        entry_frame = tk.Frame(parent_frame, bg="#2d2d2d")
         entry = tk.Entry(
             entry_frame,
             textvariable=entryvar,
@@ -107,7 +107,7 @@ def add_contract_tab(notebook, font):
         # Create dropdown listbox
         dropdown = tk.Listbox(
             root,
-            bg="#1e1e1e",
+            bg="#2d2d2d",
             fg="#d4d4d4",
             selectbackground="#0078d7",
             selectforeground="#ffffff",
@@ -239,17 +239,17 @@ def add_contract_tab(notebook, font):
         return entry_frame, entry
     
     # Main container
-    main_container = tk.Frame(contract_frame, bg="#1e1e1e")
+    main_container = tk.Frame(contract_frame, bg="#2d2d2d")
     main_container.pack(fill="both", expand=True, padx=5, pady=5)
     
     # Top section: Player selection
-    selection_frame = tk.Frame(main_container, bg="#1e1e1e", relief="ridge", bd=2)
+    selection_frame = tk.Frame(main_container, bg="#2d2d2d", relief="ridge", bd=2)
     selection_frame.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         selection_frame,
         text="Select Player:",
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
         font=font
     ).pack(side="left", padx=5, pady=5)
@@ -270,14 +270,14 @@ def add_contract_tab(notebook, font):
     player_autocomplete_frame.pack(side="left", fill="x", expand=True, padx=5, pady=5)
     
     # Selected player info panel
-    player_info_frame = tk.Frame(main_container, bg="#1e1e1e", relief="ridge", bd=2)
+    player_info_frame = tk.Frame(main_container, bg="#2d2d2d", relief="ridge", bd=2)
     player_info_frame.pack(fill="x", padx=5, pady=5)
     
     player_info_label = tk.Label(
         player_info_frame,
         text="No player selected",
         font=font,
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
         justify="left",
         anchor="w"
@@ -285,22 +285,22 @@ def add_contract_tab(notebook, font):
     player_info_label.pack(fill="x", padx=10, pady=10)
     
     # Settings panel
-    settings_frame = tk.Frame(main_container, bg="#1e1e1e", relief="ridge", bd=2)
+    settings_frame = tk.Frame(main_container, bg="#2d2d2d", relief="ridge", bd=2)
     settings_frame.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         settings_frame,
         text="Comparison Settings:",
         font=(font[0], font[1], "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     ).pack(anchor="w", padx=10, pady=(10, 5))
     
-    settings_inner = tk.Frame(settings_frame, bg="#1e1e1e")
+    settings_inner = tk.Frame(settings_frame, bg="#2d2d2d")
     settings_inner.pack(fill="x", padx=10, pady=5)
     
     # Position group selection
-    tk.Label(settings_inner, text="Compare to positions:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=5)
+    tk.Label(settings_inner, text="Compare to positions:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=5)
     
     position_group_var = tk.StringVar(value="auto")
     position_group_combo = ttk.Combobox(
@@ -337,66 +337,66 @@ def add_contract_tab(notebook, font):
             position_group_combo.set("")
     
     # Age range filter
-    age_frame = tk.Frame(settings_inner, bg="#1e1e1e")
+    age_frame = tk.Frame(settings_inner, bg="#2d2d2d")
     age_frame.pack(side="left", padx=10)
     
-    tk.Label(age_frame, text="Age range:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=5)
+    tk.Label(age_frame, text="Age range:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=5)
     
     min_age_var = tk.StringVar(value="18")
     max_age_var = tk.StringVar(value="45")
     
     tk.Entry(age_frame, textvariable=min_age_var, width=5, bg="#000000", fg="#d4d4d4", font=font).pack(side="left", padx=2)
-    tk.Label(age_frame, text="to", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=2)
+    tk.Label(age_frame, text="to", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=2)
     tk.Entry(age_frame, textvariable=max_age_var, width=5, bg="#000000", fg="#d4d4d4", font=font).pack(side="left", padx=2)
     
     # Stat range filters - Batter filters
-    batter_filters_frame = tk.Frame(settings_inner, bg="#1e1e1e")
+    batter_filters_frame = tk.Frame(settings_inner, bg="#2d2d2d")
     
     # OPS+ range filter
-    ops_frame = tk.Frame(batter_filters_frame, bg="#1e1e1e")
+    ops_frame = tk.Frame(batter_filters_frame, bg="#2d2d2d")
     ops_frame.pack(side="left", padx=5)
-    tk.Label(ops_frame, text="OPS+ range: ±", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(ops_frame, text="OPS+ range: ±", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     ops_range_var = tk.StringVar(value="20")
     tk.Entry(ops_frame, textvariable=ops_range_var, width=5, bg="#000000", fg="#d4d4d4", font=font).pack(side="left", padx=2)
-    tk.Label(ops_frame, text="%", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(ops_frame, text="%", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     
     # wRC+ range filter
-    wrc_frame = tk.Frame(batter_filters_frame, bg="#1e1e1e")
+    wrc_frame = tk.Frame(batter_filters_frame, bg="#2d2d2d")
     wrc_frame.pack(side="left", padx=5)
-    tk.Label(wrc_frame, text="wRC+ range: ±", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(wrc_frame, text="wRC+ range: ±", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     wrc_range_var = tk.StringVar(value="20")
     tk.Entry(wrc_frame, textvariable=wrc_range_var, width=5, bg="#000000", fg="#d4d4d4", font=font).pack(side="left", padx=2)
-    tk.Label(wrc_frame, text="%", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(wrc_frame, text="%", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     
     # WAR range filter (batter)
-    war_batter_frame = tk.Frame(batter_filters_frame, bg="#1e1e1e")
+    war_batter_frame = tk.Frame(batter_filters_frame, bg="#2d2d2d")
     war_batter_frame.pack(side="left", padx=5)
-    tk.Label(war_batter_frame, text="WAR range: ±", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(war_batter_frame, text="WAR range: ±", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     war_batter_range_var = tk.StringVar(value="2.0")
     tk.Entry(war_batter_frame, textvariable=war_batter_range_var, width=5, bg="#000000", fg="#d4d4d4", font=font).pack(side="left", padx=2)
     
     # Stat range filters - Pitcher filters
-    pitcher_filters_frame = tk.Frame(settings_inner, bg="#1e1e1e")
+    pitcher_filters_frame = tk.Frame(settings_inner, bg="#2d2d2d")
     
     # ERA+ range filter
-    era_frame = tk.Frame(pitcher_filters_frame, bg="#1e1e1e")
+    era_frame = tk.Frame(pitcher_filters_frame, bg="#2d2d2d")
     era_frame.pack(side="left", padx=5)
-    tk.Label(era_frame, text="ERA+ range: ±", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(era_frame, text="ERA+ range: ±", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     era_range_var = tk.StringVar(value="20")
     tk.Entry(era_frame, textvariable=era_range_var, width=5, bg="#000000", fg="#d4d4d4", font=font).pack(side="left", padx=2)
-    tk.Label(era_frame, text="%", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(era_frame, text="%", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     
     # WAR range filter (pitcher)
-    war_pitcher_frame = tk.Frame(pitcher_filters_frame, bg="#1e1e1e")
+    war_pitcher_frame = tk.Frame(pitcher_filters_frame, bg="#2d2d2d")
     war_pitcher_frame.pack(side="left", padx=5)
-    tk.Label(war_pitcher_frame, text="WAR range: ±", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(war_pitcher_frame, text="WAR range: ±", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     war_pitcher_range_var = tk.StringVar(value="2.0")
     tk.Entry(war_pitcher_frame, textvariable=war_pitcher_range_var, width=5, bg="#000000", fg="#d4d4d4", font=font).pack(side="left", padx=2)
     
     # rWAR range filter
-    rwar_frame = tk.Frame(pitcher_filters_frame, bg="#1e1e1e")
+    rwar_frame = tk.Frame(pitcher_filters_frame, bg="#2d2d2d")
     rwar_frame.pack(side="left", padx=5)
-    tk.Label(rwar_frame, text="rWAR range: ±", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(rwar_frame, text="rWAR range: ±", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     rwar_range_var = tk.StringVar(value="2.0")
     tk.Entry(rwar_frame, textvariable=rwar_range_var, width=5, bg="#000000", fg="#d4d4d4", font=font).pack(side="left", padx=2)
     
@@ -422,18 +422,18 @@ def add_contract_tab(notebook, font):
                 pitcher_filters_frame.pack(side="left", padx=10)
     
     # Comparables table
-    comparables_frame = tk.Frame(main_container, bg="#1e1e1e", relief="ridge", bd=2)
+    comparables_frame = tk.Frame(main_container, bg="#2d2d2d", relief="ridge", bd=2)
     comparables_frame.pack(fill="both", expand=True, padx=5, pady=5)
     
     tk.Label(
         comparables_frame,
         text="Comparable Players:",
         font=(font[0], font[1], "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     ).pack(anchor="w", padx=10, pady=(10, 5))
     
-    table_frame = tk.Frame(comparables_frame, bg="#1e1e1e")
+    table_frame = tk.Frame(comparables_frame, bg="#2d2d2d")
     table_frame.pack(fill="both", expand=True, padx=10, pady=5)
     
     vsb = ttk.Scrollbar(table_frame, orient="vertical")
@@ -493,14 +493,14 @@ def add_contract_tab(notebook, font):
     comparables_table.bind("<Leave>", on_leave)
     
     # Contract suggestion panel
-    suggestion_frame = tk.Frame(main_container, bg="#1e1e1e", relief="ridge", bd=2)
+    suggestion_frame = tk.Frame(main_container, bg="#2d2d2d", relief="ridge", bd=2)
     suggestion_frame.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         suggestion_frame,
         text="Contract Suggestion:",
         font=(font[0], font[1], "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     ).pack(anchor="w", padx=10, pady=(10, 5))
     
@@ -508,7 +508,7 @@ def add_contract_tab(notebook, font):
         suggestion_frame,
         text="Select a player to see contract suggestions",
         font=font,
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
         justify="left",
         anchor="w"

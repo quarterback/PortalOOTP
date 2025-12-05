@@ -52,21 +52,21 @@ def add_trade_finder_tab(notebook, font):
     inner_notebook.add(original_frame, text="📤 Veterans & Prospects")
     
     # Main container with two panels
-    main_container = tk.Frame(original_frame, bg="#1e1e1e")
+    main_container = tk.Frame(original_frame, bg="#2d2d2d")
     main_container.pack(fill="both", expand=True, padx=5, pady=5)
     
     # Left panel - Expiring Veterans (Sell High)
-    left_frame = tk.Frame(main_container, bg="#1e1e1e", relief="ridge", bd=2)
+    left_frame = tk.Frame(main_container, bg="#2d2d2d", relief="ridge", bd=2)
     left_frame.pack(side="left", fill="both", expand=True, padx=(0, 5))
     
-    left_header = tk.Frame(left_frame, bg="#1e1e1e")
+    left_header = tk.Frame(left_frame, bg="#2d2d2d")
     left_header.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         left_header,
         text="📤 Expiring Veterans (Sell High)",
         font=(font[0], font[1] + 2, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     ).pack(side="left")
     
@@ -74,15 +74,15 @@ def add_trade_finder_tab(notebook, font):
         left_header,
         text="Age 27+, YL ≤ 1, Producing Well",
         font=(font[0], font[1] - 1),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#888888"
     ).pack(side="left", padx=(10, 0))
     
     # Veterans filter controls
-    vet_filter_frame = tk.Frame(left_frame, bg="#1e1e1e")
+    vet_filter_frame = tk.Frame(left_frame, bg="#2d2d2d")
     vet_filter_frame.pack(fill="x", padx=5, pady=2)
     
-    tk.Label(vet_filter_frame, text="Position:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(vet_filter_frame, text="Position:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     vet_pos_var = tk.StringVar(value="All")
     vet_pos_combo = ttk.Combobox(
         vet_filter_frame,
@@ -93,13 +93,13 @@ def add_trade_finder_tab(notebook, font):
     )
     vet_pos_combo.pack(side="left", padx=5)
     
-    tk.Label(vet_filter_frame, text="Min WAR:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
+    tk.Label(vet_filter_frame, text="Min WAR:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
     vet_war_var = tk.StringVar(value="0.5")
     vet_war_entry = tk.Entry(vet_filter_frame, textvariable=vet_war_var, width=5, bg="#000000", fg="#d4d4d4", font=font)
     vet_war_entry.pack(side="left", padx=5)
     
     # Veterans table
-    vet_table_frame = tk.Frame(left_frame, bg="#1e1e1e")
+    vet_table_frame = tk.Frame(left_frame, bg="#2d2d2d")
     vet_table_frame.pack(fill="both", expand=True, padx=5, pady=5)
     
     vet_vsb = ttk.Scrollbar(vet_table_frame, orient="vertical")
@@ -148,17 +148,17 @@ def add_trade_finder_tab(notebook, font):
     bind_player_card_right_click(vet_table, vet_player_data_map, lambda p: (p, get_player_type(p)))
     
     # Right panel - High-Upside Prospects (Buy Low)
-    right_frame = tk.Frame(main_container, bg="#1e1e1e", relief="ridge", bd=2)
+    right_frame = tk.Frame(main_container, bg="#2d2d2d", relief="ridge", bd=2)
     right_frame.pack(side="right", fill="both", expand=True, padx=(5, 0))
     
-    right_header = tk.Frame(right_frame, bg="#1e1e1e")
+    right_header = tk.Frame(right_frame, bg="#2d2d2d")
     right_header.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         right_header,
         text="📥 High-Upside Prospects (Buy Low)",
         font=(font[0], font[1] + 2, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     ).pack(side="left")
     
@@ -166,15 +166,15 @@ def add_trade_finder_tab(notebook, font):
         right_header,
         text="Age ≤ 25, POT - OVR ≥ 15",
         font=(font[0], font[1] - 1),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#888888"
     ).pack(side="left", padx=(10, 0))
     
     # Prospects filter controls
-    pros_filter_frame = tk.Frame(right_frame, bg="#1e1e1e")
+    pros_filter_frame = tk.Frame(right_frame, bg="#2d2d2d")
     pros_filter_frame.pack(fill="x", padx=5, pady=2)
     
-    tk.Label(pros_filter_frame, text="Position:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(pros_filter_frame, text="Position:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     pros_pos_var = tk.StringVar(value="All")
     pros_pos_combo = ttk.Combobox(
         pros_filter_frame,
@@ -185,13 +185,13 @@ def add_trade_finder_tab(notebook, font):
     )
     pros_pos_combo.pack(side="left", padx=5)
     
-    tk.Label(pros_filter_frame, text="Min Gap:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
+    tk.Label(pros_filter_frame, text="Min Gap:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
     pros_gap_var = tk.StringVar(value="15")
     pros_gap_entry = tk.Entry(pros_filter_frame, textvariable=pros_gap_var, width=5, bg="#000000", fg="#d4d4d4", font=font)
     pros_gap_entry.pack(side="left", padx=5)
     
     # Prospects table
-    pros_table_frame = tk.Frame(right_frame, bg="#1e1e1e")
+    pros_table_frame = tk.Frame(right_frame, bg="#2d2d2d")
     pros_table_frame.pack(fill="both", expand=True, padx=5, pady=5)
     
     pros_vsb = ttk.Scrollbar(pros_table_frame, orient="vertical")
@@ -541,18 +541,18 @@ def add_trade_finder_tab(notebook, font):
     inner_notebook.add(surplus_frame, text="💰 Surplus Value")
     
     # Surplus value container
-    surplus_container = tk.Frame(surplus_frame, bg="#1e1e1e")
+    surplus_container = tk.Frame(surplus_frame, bg="#2d2d2d")
     surplus_container.pack(fill="both", expand=True, padx=5, pady=5)
     
     # Header with explanation
-    surplus_header = tk.Frame(surplus_container, bg="#1e1e1e")
+    surplus_header = tk.Frame(surplus_container, bg="#2d2d2d")
     surplus_header.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         surplus_header,
         text="💰 Surplus Value Trade Finder",
         font=(font[0], font[1] + 2, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     ).pack(side="left")
     
@@ -560,15 +560,15 @@ def add_trade_finder_tab(notebook, font):
         surplus_header,
         text="Players providing more value than their salary (WAR × $8M/WAR - Salary)",
         font=(font[0], font[1] - 1),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#888888"
     ).pack(side="left", padx=(10, 0))
     
     # Surplus filter controls
-    surplus_filter_frame = tk.Frame(surplus_container, bg="#1e1e1e")
+    surplus_filter_frame = tk.Frame(surplus_container, bg="#2d2d2d")
     surplus_filter_frame.pack(fill="x", padx=5, pady=2)
     
-    tk.Label(surplus_filter_frame, text="Position:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(surplus_filter_frame, text="Position:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     surplus_pos_var = tk.StringVar(value="All")
     surplus_pos_combo = ttk.Combobox(
         surplus_filter_frame,
@@ -579,18 +579,18 @@ def add_trade_finder_tab(notebook, font):
     )
     surplus_pos_combo.pack(side="left", padx=5)
     
-    tk.Label(surplus_filter_frame, text="Min Surplus ($M):", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
+    tk.Label(surplus_filter_frame, text="Min Surplus ($M):", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
     surplus_min_var = tk.StringVar(value="0")
     surplus_min_entry = tk.Entry(surplus_filter_frame, textvariable=surplus_min_var, width=5, bg="#000000", fg="#d4d4d4", font=font)
     surplus_min_entry.pack(side="left", padx=5)
     
-    tk.Label(surplus_filter_frame, text="Max Age:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
+    tk.Label(surplus_filter_frame, text="Max Age:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
     surplus_age_var = tk.StringVar(value="35")
     surplus_age_entry = tk.Entry(surplus_filter_frame, textvariable=surplus_age_var, width=4, bg="#000000", fg="#d4d4d4", font=font)
     surplus_age_entry.pack(side="left", padx=5)
     
     # Archetype filter
-    tk.Label(surplus_filter_frame, text="Archetype:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
+    tk.Label(surplus_filter_frame, text="Archetype:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
     surplus_archetype_var = tk.StringVar(value="All")
     surplus_archetype_options = ["All"]
     for key, info in ARCHETYPES.items():
@@ -605,7 +605,7 @@ def add_trade_finder_tab(notebook, font):
     surplus_archetype_combo.pack(side="left", padx=5)
     
     # Surplus value table
-    surplus_table_frame = tk.Frame(surplus_container, bg="#1e1e1e")
+    surplus_table_frame = tk.Frame(surplus_container, bg="#2d2d2d")
     surplus_table_frame.pack(fill="both", expand=True, padx=5, pady=5)
     
     surplus_vsb = ttk.Scrollbar(surplus_table_frame, orient="vertical")

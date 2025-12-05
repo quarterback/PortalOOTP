@@ -22,14 +22,14 @@ def add_hidden_gems_tab(notebook, font):
     hidden_gems_data = {}
     
     # Header
-    header_frame = tk.Frame(hidden_gems_frame, bg="#1e1e1e")
+    header_frame = tk.Frame(hidden_gems_frame, bg="#2d2d2d")
     header_frame.pack(fill="x", padx=10, pady=5)
     
     tk.Label(
         header_frame,
         text="💎 Hidden Gems Finder",
         font=(font[0], font[1] + 4, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     ).pack(side="left")
     
@@ -37,15 +37,15 @@ def add_hidden_gems_tab(notebook, font):
         header_frame,
         text="Find overlooked players across the league",
         font=(font[0], font[1] - 1),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#888888"
     ).pack(side="left", padx=(20, 0))
     
     # Category filter frame
-    filter_frame = tk.Frame(hidden_gems_frame, bg="#1e1e1e")
+    filter_frame = tk.Frame(hidden_gems_frame, bg="#2d2d2d")
     filter_frame.pack(fill="x", padx=10, pady=5)
     
-    tk.Label(filter_frame, text="Category:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(filter_frame, text="Category:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     
     category_var = tk.StringVar(value="all")
     category_options = ["All Categories"]
@@ -67,7 +67,7 @@ def add_hidden_gems_tab(notebook, font):
     category_combo.pack(side="left", padx=5)
     
     # Position filter
-    tk.Label(filter_frame, text="Position:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=(15, 0))
+    tk.Label(filter_frame, text="Position:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=(15, 0))
     pos_var = tk.StringVar(value="All")
     pos_combo = ttk.Combobox(
         filter_frame,
@@ -79,7 +79,7 @@ def add_hidden_gems_tab(notebook, font):
     pos_combo.pack(side="left", padx=5)
     
     # Archetype filter
-    tk.Label(filter_frame, text="Archetype:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=(15, 0))
+    tk.Label(filter_frame, text="Archetype:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=(15, 0))
     archetype_var = tk.StringVar(value="All")
     archetype_options = ["All"]
     for key, info in ARCHETYPES.items():
@@ -99,17 +99,17 @@ def add_hidden_gems_tab(notebook, font):
         filter_frame,
         textvariable=summary_var,
         font=font,
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#888888"
     )
     summary_label.pack(side="right", padx=10)
     
     # Main container with category cards and table
-    main_container = tk.Frame(hidden_gems_frame, bg="#1e1e1e")
+    main_container = tk.Frame(hidden_gems_frame, bg="#2d2d2d")
     main_container.pack(fill="both", expand=True, padx=10, pady=5)
     
     # Left side - Category summary cards
-    cards_frame = tk.Frame(main_container, bg="#1e1e1e", width=200)
+    cards_frame = tk.Frame(main_container, bg="#2d2d2d", width=200)
     cards_frame.pack(side="left", fill="y", padx=(0, 10))
     cards_frame.pack_propagate(False)
     
@@ -117,7 +117,7 @@ def add_hidden_gems_tab(notebook, font):
         cards_frame,
         text="Categories",
         font=(font[0], font[1] + 1, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4"
     ).pack(fill="x", pady=(0, 10))
     
@@ -185,11 +185,11 @@ def add_hidden_gems_tab(notebook, font):
                     grandchild.bind("<Button-1>", on_card_click)
     
     # Right side - Results table
-    table_container = tk.Frame(main_container, bg="#1e1e1e")
+    table_container = tk.Frame(main_container, bg="#2d2d2d")
     table_container.pack(side="right", fill="both", expand=True)
     
     # Table
-    table_frame = tk.Frame(table_container, bg="#1e1e1e")
+    table_frame = tk.Frame(table_container, bg="#2d2d2d")
     table_frame.pack(fill="both", expand=True)
     
     vsb = ttk.Scrollbar(table_frame, orient="vertical")

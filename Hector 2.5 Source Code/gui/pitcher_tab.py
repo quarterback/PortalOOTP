@@ -23,22 +23,22 @@ def add_pitcher_tab(notebook, font):
     pitcher_frame = ttk.Frame(notebook)
     notebook.add(pitcher_frame, text="Pitchers")
 
-    filter_frame = tk.Frame(pitcher_frame, bg="#1e1e1e", highlightthickness=0, bd=0)
+    filter_frame = tk.Frame(pitcher_frame, bg="#2d2d2d", highlightthickness=0, bd=0)
     filter_frame.pack(side="left", fill="y", padx=5, pady=5)
 
     # Draft Comparison Mode Toggle
     draft_mode_var = tk.BooleanVar(value=False)
-    draft_toggle_frame = tk.Frame(filter_frame, bg="#1e1e1e")
+    draft_toggle_frame = tk.Frame(filter_frame, bg="#2d2d2d")
     draft_toggle_frame.pack(fill="x", padx=0, pady=(2, 8))
     
     draft_toggle = tk.Checkbutton(
         draft_toggle_frame,
         text="Draft Comparison Mode",
         variable=draft_mode_var,
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
-        selectcolor="#1e1e1e",
-        activebackground="#1e1e1e",
+        selectcolor="#2d2d2d",
+        activebackground="#2d2d2d",
         activeforeground="#00ff7f",
         highlightthickness=0,
         font=(font[0], font[1], "bold")
@@ -48,17 +48,17 @@ def add_pitcher_tab(notebook, font):
     
     # Stats-Based Scoring Toggle
     stats_mode_var = tk.BooleanVar(value=False)
-    stats_toggle_frame = tk.Frame(filter_frame, bg="#1e1e1e")
+    stats_toggle_frame = tk.Frame(filter_frame, bg="#2d2d2d")
     stats_toggle_frame.pack(fill="x", padx=0, pady=(2, 8))
     
     stats_toggle = tk.Checkbutton(
         stats_toggle_frame,
         text="Use Stats-Based Scoring",
         variable=stats_mode_var,
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
-        selectcolor="#1e1e1e",
-        activebackground="#1e1e1e",
+        selectcolor="#2d2d2d",
+        activebackground="#2d2d2d",
         activeforeground="#00ff7f",
         highlightthickness=0,
         font=(font[0], font[1], "bold")
@@ -71,7 +71,7 @@ def add_pitcher_tab(notebook, font):
         text="Filter by Position",
         font=font,
         anchor="w",
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4"
     )
     filter_label.pack(fill="x", padx=0, pady=(2, 8))
@@ -83,14 +83,14 @@ def add_pitcher_tab(notebook, font):
 
     # -- Horizontal position filters (no old add_position_filters) --
     def add_horizontal_position_filters(parent, positions, pos_vars, on_change):
-        row = tk.Frame(parent, bg="#1e1e1e", highlightthickness=0, highlightbackground="#1e1e1e")
+        row = tk.Frame(parent, bg="#2d2d2d", highlightthickness=0, highlightbackground="#2d2d2d")
         row.pack(fill="x", pady=(0, 2))
         cbargs = dict(
-            bg="#1e1e1e", fg="#d4d4d4", selectcolor="#1e1e1e",
-            activebackground="#1e1e1e", activeforeground="#d4d4d4",
+            bg="#2d2d2d", fg="#d4d4d4", selectcolor="#2d2d2d",
+            activebackground="#2d2d2d", activeforeground="#d4d4d4",
             highlightthickness=0,
-            highlightbackground="#1e1e1e",
-            highlightcolor="#1e1e1e",
+            highlightbackground="#2d2d2d",
+            highlightcolor="#2d2d2d",
             takefocus=0,
             bd=0
         )
@@ -142,12 +142,12 @@ def add_pitcher_tab(notebook, font):
         text="Quick Reports",
         font=font,
         anchor="w",
-        bg="#1e1e1e",  # Explicit dark background
+        bg="#2d2d2d",  # Explicit dark background
         fg="#d4d4d4"   # Light text color
     )
     report_label.pack(fill="x", padx=0, pady=(16,2))
 
-    top20_btn_frame = tk.Frame(filter_frame, bg="#1e1e1e")
+    top20_btn_frame = tk.Frame(filter_frame, bg="#2d2d2d")
     top20_btn_frame.pack(fill="x", pady=6, anchor="n")
 
     # SHOW ALL PITCHERS FIRST
@@ -169,10 +169,10 @@ def add_pitcher_tab(notebook, font):
     add_button_tooltip(btn_top20, "top_pitchers_by_pos")
 
 
-    controls = tk.Frame(pitcher_frame, bg="#1e1e1e", highlightthickness=0, bd=0)
+    controls = tk.Frame(pitcher_frame, bg="#2d2d2d", highlightthickness=0, bd=0)
     controls.pack(fill="x", padx=5, pady=5)
 
-    tk.Label(controls, text="Search Player:", bg="#1e1e1e", fg="#d4d4d4").pack(side="left")
+    tk.Label(controls, text="Search Player:", bg="#2d2d2d", fg="#d4d4d4").pack(side="left")
     search_entry = tk.Entry(controls, textvariable=search_var, width=30,
                         bg="#000000", fg="#d4d4d4", insertbackground="#00ff7f",
                         highlightthickness=0, relief="flat", font=font)
@@ -180,7 +180,7 @@ def add_pitcher_tab(notebook, font):
     add_clear_button(search_entry, search_var)
     add_search_tooltip(search_entry, tab_type="pitcher")
 
-    table_frame = tk.Frame(pitcher_frame, bg="#1e1e1e", highlightthickness=0, bd=0)
+    table_frame = tk.Frame(pitcher_frame, bg="#2d2d2d", highlightthickness=0, bd=0)
     table_frame.pack(side="right", fill="both", expand=True)
 
     vsb = ttk.Scrollbar(table_frame, orient="vertical")

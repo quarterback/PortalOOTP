@@ -44,7 +44,7 @@ def add_contract_value_tab(notebook, font):
     all_batters = []
     
     # Main container with notebook for sub-tabs
-    main_container = tk.Frame(contract_frame, bg="#1e1e1e")
+    main_container = tk.Frame(contract_frame, bg="#2d2d2d")
     main_container.pack(fill="both", expand=True, padx=5, pady=5)
     
     # Create sub-notebook for Contract Analysis and Extension Watch
@@ -52,18 +52,18 @@ def add_contract_value_tab(notebook, font):
     sub_notebook.pack(fill="both", expand=True)
     
     # ==================== CONTRACT ANALYSIS TAB ====================
-    analysis_frame = tk.Frame(sub_notebook, bg="#1e1e1e")
+    analysis_frame = tk.Frame(sub_notebook, bg="#2d2d2d")
     sub_notebook.add(analysis_frame, text="📊 Contract Analysis")
     
     # Header
-    header_frame = tk.Frame(analysis_frame, bg="#1e1e1e")
+    header_frame = tk.Frame(analysis_frame, bg="#2d2d2d")
     header_frame.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         header_frame,
         text="💵 Contract Value Analysis",
         font=(font[0], font[1] + 2, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     ).pack(side="left")
     
@@ -71,16 +71,16 @@ def add_contract_value_tab(notebook, font):
         header_frame,
         text="Evaluate contract efficiency with AAV and contract status",
         font=(font[0], font[1] - 1),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#888888"
     ).pack(side="left", padx=(10, 0))
     
     # Filter controls
-    filter_frame = tk.Frame(analysis_frame, bg="#1e1e1e")
+    filter_frame = tk.Frame(analysis_frame, bg="#2d2d2d")
     filter_frame.pack(fill="x", padx=5, pady=5)
     
     # Player type filter
-    tk.Label(filter_frame, text="Type:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(filter_frame, text="Type:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     type_var = tk.StringVar(value="All")
     type_combo = ttk.Combobox(
         filter_frame,
@@ -92,7 +92,7 @@ def add_contract_value_tab(notebook, font):
     type_combo.pack(side="left", padx=5)
     
     # Position filter
-    tk.Label(filter_frame, text="Position:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
+    tk.Label(filter_frame, text="Position:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
     pos_var = tk.StringVar(value="All")
     pos_combo = ttk.Combobox(
         filter_frame,
@@ -104,7 +104,7 @@ def add_contract_value_tab(notebook, font):
     pos_combo.pack(side="left", padx=5)
     
     # Category filter - updated with new categories
-    tk.Label(filter_frame, text="Category:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
+    tk.Label(filter_frame, text="Category:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
     category_var = tk.StringVar(value="All")
     category_combo = ttk.Combobox(
         filter_frame,
@@ -116,7 +116,7 @@ def add_contract_value_tab(notebook, font):
     category_combo.pack(side="left", padx=5)
     
     # Contract Status filter
-    tk.Label(filter_frame, text="Status:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
+    tk.Label(filter_frame, text="Status:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
     status_var = tk.StringVar(value="All")
     status_combo = ttk.Combobox(
         filter_frame,
@@ -128,7 +128,7 @@ def add_contract_value_tab(notebook, font):
     status_combo.pack(side="left", padx=5)
     
     # Min WAR filter
-    tk.Label(filter_frame, text="Min WAR:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
+    tk.Label(filter_frame, text="Min WAR:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
     min_war_var = tk.StringVar(value="0")
     min_war_entry = tk.Entry(filter_frame, textvariable=min_war_var, width=5, bg="#000000", fg="#d4d4d4", font=font)
     min_war_entry.pack(side="left", padx=5)
@@ -138,7 +138,7 @@ def add_contract_value_tab(notebook, font):
     update_btn.pack(side="left", padx=10)
     
     # Table frame
-    table_frame = tk.Frame(analysis_frame, bg="#1e1e1e")
+    table_frame = tk.Frame(analysis_frame, bg="#2d2d2d")
     table_frame.pack(fill="both", expand=True, padx=5, pady=5)
     
     vsb = ttk.Scrollbar(table_frame, orient="vertical")
@@ -384,14 +384,14 @@ def add_contract_value_tab(notebook, font):
     status_combo.bind("<<ComboboxSelected>>", lambda e: update_table())
     
     # Legend frame
-    legend_frame = tk.Frame(analysis_frame, bg="#1e1e1e")
+    legend_frame = tk.Frame(analysis_frame, bg="#2d2d2d")
     legend_frame.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         legend_frame,
         text="Legend:",
         font=(font[0], font[1], "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4"
     ).pack(side="left")
     
@@ -408,30 +408,30 @@ def add_contract_value_tab(notebook, font):
             legend_frame,
             text=f"  {label}",
             font=font,
-            bg="#1e1e1e",
+            bg="#2d2d2d",
             fg=color
         ).pack(side="left", padx=(5, 0))
         tk.Label(
             legend_frame,
             text=f"({desc})",
             font=(font[0], font[1] - 2),
-            bg="#1e1e1e",
+            bg="#2d2d2d",
             fg="#666666"
         ).pack(side="left")
     
     # ==================== EXTENSION WATCH TAB ====================
-    extension_frame = tk.Frame(sub_notebook, bg="#1e1e1e")
+    extension_frame = tk.Frame(sub_notebook, bg="#2d2d2d")
     sub_notebook.add(extension_frame, text="📋 Extension Watch")
     
     # Extension header
-    ext_header_frame = tk.Frame(extension_frame, bg="#1e1e1e")
+    ext_header_frame = tk.Frame(extension_frame, bg="#2d2d2d")
     ext_header_frame.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         ext_header_frame,
         text="📋 Extension Watch",
         font=(font[0], font[1] + 2, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#9775fa"
     ).pack(side="left")
     
@@ -439,16 +439,16 @@ def add_contract_value_tab(notebook, font):
         ext_header_frame,
         text="Players with pending/accepted extensions - evaluate deal quality",
         font=(font[0], font[1] - 1),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#888888"
     ).pack(side="left", padx=(10, 0))
     
     # Extension filter controls
-    ext_filter_frame = tk.Frame(extension_frame, bg="#1e1e1e")
+    ext_filter_frame = tk.Frame(extension_frame, bg="#2d2d2d")
     ext_filter_frame.pack(fill="x", padx=5, pady=5)
     
     # Grade filter
-    tk.Label(ext_filter_frame, text="Grade:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(ext_filter_frame, text="Grade:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     ext_grade_var = tk.StringVar(value="All")
     ext_grade_combo = ttk.Combobox(
         ext_filter_frame,
@@ -460,7 +460,7 @@ def add_contract_value_tab(notebook, font):
     ext_grade_combo.pack(side="left", padx=5)
     
     # Type filter
-    tk.Label(ext_filter_frame, text="Type:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
+    tk.Label(ext_filter_frame, text="Type:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
     ext_type_var = tk.StringVar(value="All")
     ext_type_combo = ttk.Combobox(
         ext_filter_frame,
@@ -476,7 +476,7 @@ def add_contract_value_tab(notebook, font):
     ext_update_btn.pack(side="left", padx=10)
     
     # Extension table frame
-    ext_table_frame = tk.Frame(extension_frame, bg="#1e1e1e")
+    ext_table_frame = tk.Frame(extension_frame, bg="#2d2d2d")
     ext_table_frame.pack(fill="both", expand=True, padx=5, pady=5)
     
     ext_vsb = ttk.Scrollbar(ext_table_frame, orient="vertical")
@@ -622,14 +622,14 @@ def add_contract_value_tab(notebook, font):
     ext_type_combo.bind("<<ComboboxSelected>>", lambda e: update_extension_table())
     
     # Extension legend frame
-    ext_legend_frame = tk.Frame(extension_frame, bg="#1e1e1e")
+    ext_legend_frame = tk.Frame(extension_frame, bg="#2d2d2d")
     ext_legend_frame.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         ext_legend_frame,
         text="Extension Grades:",
         font=(font[0], font[1], "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4"
     ).pack(side="left")
     
@@ -645,14 +645,14 @@ def add_contract_value_tab(notebook, font):
             ext_legend_frame,
             text=f"  {label}",
             font=font,
-            bg="#1e1e1e",
+            bg="#2d2d2d",
             fg=color
         ).pack(side="left", padx=(8, 0))
         tk.Label(
             ext_legend_frame,
             text=f"({desc})",
             font=(font[0], font[1] - 2),
-            bg="#1e1e1e",
+            bg="#2d2d2d",
             fg="#666666"
         ).pack(side="left")
     

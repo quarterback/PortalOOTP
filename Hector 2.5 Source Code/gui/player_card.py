@@ -20,21 +20,21 @@ def show_player_card(parent, player, player_type="batter"):
     popup = tk.Toplevel(parent)
     popup.title(f"Player Card - {player.get('Name', 'Unknown')}")
     popup.geometry("650x650")
-    popup.configure(bg="#1e1e1e")
+    popup.configure(bg="#2d2d2d")
     
     # Make it modal-ish
     popup.transient(parent)
     popup.grab_set()
     
     # Header with player name and basic info
-    header_frame = tk.Frame(popup, bg="#1e1e1e")
+    header_frame = tk.Frame(popup, bg="#2d2d2d")
     header_frame.pack(fill="x", padx=20, pady=15)
     
     name_label = tk.Label(
         header_frame,
         text=player.get("Name", "Unknown"),
         font=("Consolas", 16, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     )
     name_label.pack(anchor="w")
@@ -49,20 +49,20 @@ def show_player_card(parent, player, player_type="batter"):
         header_frame,
         text=info_text,
         font=("Consolas", 11),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#888888"
     )
     info_label.pack(anchor="w")
     
     # OVR/POT display
-    ratings_frame = tk.Frame(header_frame, bg="#1e1e1e")
+    ratings_frame = tk.Frame(header_frame, bg="#2d2d2d")
     ratings_frame.pack(anchor="w", pady=(10, 0))
     
     tk.Label(
         ratings_frame,
         text=f"OVR: {player.get('OVR', '-')}",
         font=("Consolas", 12, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#4dabf7"
     ).pack(side="left", padx=(0, 20))
     
@@ -70,7 +70,7 @@ def show_player_card(parent, player, player_type="batter"):
         ratings_frame,
         text=f"POT: {player.get('POT', '-')}",
         font=("Consolas", 12, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#9775fa"
     ).pack(side="left")
     
@@ -78,14 +78,14 @@ def show_player_card(parent, player, player_type="batter"):
     ttk.Separator(popup, orient="horizontal").pack(fill="x", padx=20, pady=10)
     
     # Percentile rankings
-    percentile_frame = tk.Frame(popup, bg="#1e1e1e")
+    percentile_frame = tk.Frame(popup, bg="#2d2d2d")
     percentile_frame.pack(fill="both", expand=True, padx=20, pady=10)
     
     tk.Label(
         percentile_frame,
         text="Percentile Rankings (League-Wide)",
         font=("Consolas", 12, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4"
     ).pack(anchor="w", pady=(0, 10))
     
@@ -98,9 +98,9 @@ def show_player_card(parent, player, player_type="batter"):
         percentiles = calc.get_pitcher_percentiles(player)
     
     # Scrollable frame for percentiles
-    canvas = tk.Canvas(percentile_frame, bg="#1e1e1e", highlightthickness=0)
+    canvas = tk.Canvas(percentile_frame, bg="#2d2d2d", highlightthickness=0)
     scrollbar = ttk.Scrollbar(percentile_frame, orient="vertical", command=canvas.yview)
-    scrollable_frame = tk.Frame(canvas, bg="#1e1e1e")
+    scrollable_frame = tk.Frame(canvas, bg="#2d2d2d")
     
     scrollable_frame.bind(
         "<Configure>",
@@ -123,7 +123,7 @@ def show_player_card(parent, player, player_type="batter"):
         )
         
         for metric_name, data in sorted_percentiles:
-            row = tk.Frame(scrollable_frame, bg="#1e1e1e")
+            row = tk.Frame(scrollable_frame, bg="#2d2d2d")
             row.pack(fill="x", pady=2)
             
             # Metric name
@@ -131,7 +131,7 @@ def show_player_card(parent, player, player_type="batter"):
                 row,
                 text=f"{data['label']:>10}",
                 font=("Consolas", 10),
-                bg="#1e1e1e",
+                bg="#2d2d2d",
                 fg="#888888",
                 width=10,
                 anchor="e"
@@ -143,7 +143,7 @@ def show_player_card(parent, player, player_type="batter"):
                 row,
                 text=value_text,
                 font=("Consolas", 10),
-                bg="#1e1e1e",
+                bg="#2d2d2d",
                 fg="#d4d4d4",
                 width=8
             ).pack(side="left")
@@ -153,7 +153,7 @@ def show_player_card(parent, player, player_type="batter"):
                 row,
                 text=f"{data['percentile']:>3}th",
                 font=("Consolas", 10),
-                bg="#1e1e1e",
+                bg="#2d2d2d",
                 fg="#d4d4d4",
                 width=6
             ).pack(side="left", padx=5)
@@ -164,7 +164,7 @@ def show_player_card(parent, player, player_type="batter"):
                 row,
                 text=data["bar"],
                 font=("Consolas", 10),
-                bg="#1e1e1e",
+                bg="#2d2d2d",
                 fg=tier["color"],
                 width=22
             ).pack(side="left")
@@ -174,7 +174,7 @@ def show_player_card(parent, player, player_type="batter"):
                 row,
                 text=f"{tier['icon']} {tier['label']}",
                 font=("Consolas", 10),
-                bg="#1e1e1e",
+                bg="#2d2d2d",
                 fg=tier["color"],
                 width=14
             ).pack(side="left")
@@ -183,7 +183,7 @@ def show_player_card(parent, player, player_type="batter"):
             scrollable_frame,
             text="No percentile data available.\nLoad player data and try again.",
             font=("Consolas", 11),
-            bg="#1e1e1e",
+            bg="#2d2d2d",
             fg="#888888"
         ).pack(pady=20)
     
@@ -246,14 +246,14 @@ def show_player_card(parent, player, player_type="batter"):
     # Archetype Fits Section
     ttk.Separator(popup, orient="horizontal").pack(fill="x", padx=20, pady=10)
     
-    archetype_frame = tk.Frame(popup, bg="#1e1e1e")
+    archetype_frame = tk.Frame(popup, bg="#2d2d2d")
     archetype_frame.pack(fill="x", padx=20, pady=5)
     
     tk.Label(
         archetype_frame,
         text="🎯 Archetype Fits",
         font=("Consolas", 12, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#ffd43b"
     ).pack(anchor="w")
     
@@ -291,13 +291,13 @@ def show_player_card(parent, player, player_type="batter"):
         )
         
         if sorted_fits:
-            other_frame = tk.Frame(archetype_frame, bg="#1e1e1e")
+            other_frame = tk.Frame(archetype_frame, bg="#2d2d2d")
             other_frame.pack(fill="x", pady=5)
             
             for i, (arch_key, fit_info) in enumerate(sorted_fits[:6]):  # Show top 6
                 arch_info = ARCHETYPES.get(arch_key, {})
                 
-                fit_frame = tk.Frame(other_frame, bg="#1e1e1e")
+                fit_frame = tk.Frame(other_frame, bg="#2d2d2d")
                 fit_frame.pack(fill="x", pady=1)
                 
                 # Color based on fit level
@@ -312,7 +312,7 @@ def show_player_card(parent, player, player_type="batter"):
                     fit_frame,
                     text=f"{arch_info.get('icon', '•')} {fit_info['archetype_name']}",
                     font=("Consolas", 10),
-                    bg="#1e1e1e",
+                    bg="#2d2d2d",
                     fg="#d4d4d4",
                     width=22,
                     anchor="w"
@@ -322,7 +322,7 @@ def show_player_card(parent, player, player_type="batter"):
                     fit_frame,
                     text=f"{fit_info['score']:.0f}",
                     font=("Consolas", 10, "bold"),
-                    bg="#1e1e1e",
+                    bg="#2d2d2d",
                     fg=score_color,
                     width=4
                 ).pack(side="left")
@@ -331,7 +331,7 @@ def show_player_card(parent, player, player_type="batter"):
                     fit_frame,
                     text=fit_info['label'],
                     font=("Consolas", 9),
-                    bg="#1e1e1e",
+                    bg="#2d2d2d",
                     fg="#888888"
                 ).pack(side="left", padx=5)
         else:
@@ -339,7 +339,7 @@ def show_player_card(parent, player, player_type="batter"):
                 archetype_frame,
                 text="No strong archetype fits (score < 40)",
                 font=("Consolas", 10),
-                bg="#1e1e1e",
+                bg="#2d2d2d",
                 fg="#888888"
             ).pack(anchor="w", pady=5)
     else:
@@ -347,7 +347,7 @@ def show_player_card(parent, player, player_type="batter"):
             archetype_frame,
             text="No archetype data available",
             font=("Consolas", 10),
-            bg="#1e1e1e",
+            bg="#2d2d2d",
             fg="#888888"
         ).pack(anchor="w", pady=5)
     

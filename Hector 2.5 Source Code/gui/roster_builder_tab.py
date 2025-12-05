@@ -25,14 +25,14 @@ def add_roster_builder_tab(notebook, font):
     roster_builder = RosterBuilder()
     
     # Header
-    header_frame = tk.Frame(roster_frame, bg="#1e1e1e")
+    header_frame = tk.Frame(roster_frame, bg="#2d2d2d")
     header_frame.pack(fill="x", padx=10, pady=5)
     
     tk.Label(
         header_frame,
         text="📋 Roster Builder Sandbox",
         font=(font[0], font[1] + 4, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     ).pack(side="left")
     
@@ -40,7 +40,7 @@ def add_roster_builder_tab(notebook, font):
         header_frame,
         text="Build hypothetical rosters from any team",
         font=(font[0], font[1] - 1),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#888888"
     ).pack(side="left", padx=(20, 0))
     
@@ -165,11 +165,11 @@ def add_roster_builder_tab(notebook, font):
     generate_btn.pack(side="left", padx=15, pady=5)
     
     # Main layout - 3 columns
-    main_container = tk.Frame(roster_frame, bg="#1e1e1e")
+    main_container = tk.Frame(roster_frame, bg="#2d2d2d")
     main_container.pack(fill="both", expand=True, padx=5, pady=5)
     
     # Left panel - Player Pool
-    left_frame = tk.Frame(main_container, bg="#1e1e1e", width=450)
+    left_frame = tk.Frame(main_container, bg="#2d2d2d", width=450)
     left_frame.pack(side="left", fill="both", expand=True, padx=5)
     left_frame.pack_propagate(False)
     
@@ -177,16 +177,16 @@ def add_roster_builder_tab(notebook, font):
         left_frame,
         text="Player Pool",
         font=(font[0], font[1] + 1, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4"
     ).pack(fill="x", pady=(0, 5))
     
     # Pool filters
-    pool_filter_frame = tk.Frame(left_frame, bg="#1e1e1e")
+    pool_filter_frame = tk.Frame(left_frame, bg="#2d2d2d")
     pool_filter_frame.pack(fill="x", pady=5)
     
     # Search
-    tk.Label(pool_filter_frame, text="Search:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left")
+    tk.Label(pool_filter_frame, text="Search:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left")
     search_var = tk.StringVar()
     search_entry = tk.Entry(
         pool_filter_frame, textvariable=search_var, width=15,
@@ -196,7 +196,7 @@ def add_roster_builder_tab(notebook, font):
     search_entry.pack(side="left", padx=5)
     
     # Position filter
-    tk.Label(pool_filter_frame, text="Pos:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
+    tk.Label(pool_filter_frame, text="Pos:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
     pos_var = tk.StringVar(value="All")
     pos_combo = ttk.Combobox(
         pool_filter_frame,
@@ -208,7 +208,7 @@ def add_roster_builder_tab(notebook, font):
     pos_combo.pack(side="left", padx=5)
     
     # Team filter
-    tk.Label(pool_filter_frame, text="Team:", bg="#1e1e1e", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
+    tk.Label(pool_filter_frame, text="Team:", bg="#2d2d2d", fg="#d4d4d4", font=font).pack(side="left", padx=(10, 0))
     team_var = tk.StringVar(value="All")
     team_combo = ttk.Combobox(
         pool_filter_frame,
@@ -220,7 +220,7 @@ def add_roster_builder_tab(notebook, font):
     team_combo.pack(side="left", padx=5)
     
     # Player pool table
-    pool_table_frame = tk.Frame(left_frame, bg="#1e1e1e")
+    pool_table_frame = tk.Frame(left_frame, bg="#2d2d2d")
     pool_table_frame.pack(fill="both", expand=True)
     
     pool_vsb = ttk.Scrollbar(pool_table_frame, orient="vertical")
@@ -261,7 +261,7 @@ def add_roster_builder_tab(notebook, font):
     bind_player_card_right_click(pool_table, pool_player_data_map, lambda p: (p, get_player_type(p)))
     
     # Add to roster buttons
-    add_btn_frame = tk.Frame(left_frame, bg="#1e1e1e")
+    add_btn_frame = tk.Frame(left_frame, bg="#2d2d2d")
     add_btn_frame.pack(fill="x", pady=5)
     
     def add_selected_to_lineup():
@@ -301,7 +301,7 @@ def add_roster_builder_tab(notebook, font):
     ttk.Button(add_btn_frame, text="Add to Bench/Bullpen", command=add_selected_to_bench).pack(side="left", padx=5)
     
     # Center panel - Your Roster
-    center_frame = tk.Frame(main_container, bg="#1e1e1e", width=350)
+    center_frame = tk.Frame(main_container, bg="#2d2d2d", width=350)
     center_frame.pack(side="left", fill="both", padx=5)
     center_frame.pack_propagate(False)
     
@@ -309,14 +309,14 @@ def add_roster_builder_tab(notebook, font):
         center_frame,
         text="Your Roster",
         font=(font[0], font[1] + 1, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4"
     ).pack(fill="x", pady=(0, 5))
     
     # Roster display frame with scrolling
-    roster_canvas = tk.Canvas(center_frame, bg="#1e1e1e", highlightthickness=0)
+    roster_canvas = tk.Canvas(center_frame, bg="#2d2d2d", highlightthickness=0)
     roster_scrollbar = ttk.Scrollbar(center_frame, orient="vertical", command=roster_canvas.yview)
-    roster_display_frame = tk.Frame(roster_canvas, bg="#1e1e1e")
+    roster_display_frame = tk.Frame(roster_canvas, bg="#2d2d2d")
     
     roster_canvas.configure(yscrollcommand=roster_scrollbar.set)
     
@@ -352,7 +352,7 @@ def add_roster_builder_tab(notebook, font):
         lineup_header.pack(fill="x", pady=(0, 5))
         
         for pos in LINEUP_SLOTS:
-            slot_frame = tk.Frame(roster_display_frame, bg="#1e1e1e")
+            slot_frame = tk.Frame(roster_display_frame, bg="#2d2d2d")
             slot_frame.pack(fill="x", pady=2)
             
             tk.Label(
@@ -360,7 +360,7 @@ def add_roster_builder_tab(notebook, font):
                 text=f"{pos}:",
                 width=4,
                 font=font,
-                bg="#1e1e1e",
+                bg="#2d2d2d",
                 fg="#888888",
                 anchor="e"
             ).pack(side="left")
@@ -413,7 +413,7 @@ def add_roster_builder_tab(notebook, font):
         
         for i in range(BENCH_COUNT):
             slot_key = f"BN{i+1}"
-            slot_frame = tk.Frame(roster_display_frame, bg="#1e1e1e")
+            slot_frame = tk.Frame(roster_display_frame, bg="#2d2d2d")
             slot_frame.pack(fill="x", pady=2)
             
             tk.Label(
@@ -421,7 +421,7 @@ def add_roster_builder_tab(notebook, font):
                 text=f"BN:",
                 width=4,
                 font=font,
-                bg="#1e1e1e",
+                bg="#2d2d2d",
                 fg="#888888",
                 anchor="e"
             ).pack(side="left")
@@ -452,7 +452,7 @@ def add_roster_builder_tab(notebook, font):
         
         for i in range(ROTATION_COUNT):
             slot_key = f"SP{i+1}"
-            slot_frame = tk.Frame(roster_display_frame, bg="#1e1e1e")
+            slot_frame = tk.Frame(roster_display_frame, bg="#2d2d2d")
             slot_frame.pack(fill="x", pady=2)
             
             tk.Label(
@@ -460,7 +460,7 @@ def add_roster_builder_tab(notebook, font):
                 text=f"SP{i+1}:",
                 width=4,
                 font=font,
-                bg="#1e1e1e",
+                bg="#2d2d2d",
                 fg="#888888",
                 anchor="e"
             ).pack(side="left")
@@ -491,7 +491,7 @@ def add_roster_builder_tab(notebook, font):
         
         for i in range(BULLPEN_COUNT):
             slot_key = f"RP{i+1}"
-            slot_frame = tk.Frame(roster_display_frame, bg="#1e1e1e")
+            slot_frame = tk.Frame(roster_display_frame, bg="#2d2d2d")
             slot_frame.pack(fill="x", pady=2)
             
             tk.Label(
@@ -499,7 +499,7 @@ def add_roster_builder_tab(notebook, font):
                 text=f"RP{i+1}:",
                 width=4,
                 font=font,
-                bg="#1e1e1e",
+                bg="#2d2d2d",
                 fg="#888888",
                 anchor="e"
             ).pack(side="left")
@@ -520,7 +520,7 @@ def add_roster_builder_tab(notebook, font):
             roster_slot_labels[slot_key] = slot_label
     
     # Right panel - Team Summary
-    right_frame = tk.Frame(main_container, bg="#1e1e1e", width=280)
+    right_frame = tk.Frame(main_container, bg="#2d2d2d", width=280)
     right_frame.pack(side="right", fill="both", padx=5)
     right_frame.pack_propagate(False)
     
@@ -528,7 +528,7 @@ def add_roster_builder_tab(notebook, font):
         right_frame,
         text="Team Summary",
         font=(font[0], font[1] + 1, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4"
     ).pack(fill="x", pady=(0, 5))
     
@@ -571,7 +571,7 @@ def add_roster_builder_tab(notebook, font):
         right_frame,
         text="Position Grades",
         font=(font[0], font[1], "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4"
     ).pack(fill="x", pady=(15, 5))
     

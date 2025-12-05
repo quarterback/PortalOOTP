@@ -66,7 +66,7 @@ def add_trade_tab(notebook, font):
     
     def create_autocomplete_entry(parent_frame, entryvar, onselect_callback_ref):
         """Create an entry widget with autocomplete dropdown"""
-        entry_frame = tk.Frame(parent_frame, bg="#1e1e1e")
+        entry_frame = tk.Frame(parent_frame, bg="#2d2d2d")
         entry = tk.Entry(
             entry_frame,
             textvariable=entryvar,
@@ -86,7 +86,7 @@ def add_trade_tab(notebook, font):
         # Create dropdown listbox as child of root window (initially hidden)
         dropdown = tk.Listbox(
             root,
-            bg="#1e1e1e",
+            bg="#2d2d2d",
             fg="#d4d4d4",
             selectbackground="#0078d7",
             selectforeground="#ffffff",
@@ -255,28 +255,28 @@ def add_trade_tab(notebook, font):
 
     
     # League Settings Section
-    settings_section = tk.Frame(trade_frame, bg="#1e1e1e", relief="ridge", bd=2)
+    settings_section = tk.Frame(trade_frame, bg="#2d2d2d", relief="ridge", bd=2)
     settings_section.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         settings_section,
         text="League Settings:",
         font=(font[0], font[1], "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     ).pack(anchor="w", padx=10, pady=(10, 5))
     
-    settings_inner = tk.Frame(settings_section, bg="#1e1e1e")
+    settings_inner = tk.Frame(settings_section, bg="#2d2d2d")
     settings_inner.pack(fill="x", padx=10, pady=5)
     
     # Number of teams
-    teams_frame = tk.Frame(settings_inner, bg="#1e1e1e")
+    teams_frame = tk.Frame(settings_inner, bg="#2d2d2d")
     teams_frame.pack(side="left", padx=10)
     
     tk.Label(
         teams_frame,
         text="Number of Teams:",
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
         font=font
     ).pack(side="left", padx=(0, 5))
@@ -293,13 +293,13 @@ def add_trade_tab(notebook, font):
     teams_entry.pack(side="left")
     
     # Number of rounds
-    rounds_frame = tk.Frame(settings_inner, bg="#1e1e1e")
+    rounds_frame = tk.Frame(settings_inner, bg="#2d2d2d")
     rounds_frame.pack(side="left", padx=10)
     
     tk.Label(
         rounds_frame,
         text="Number of Rounds:",
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
         font=font
     ).pack(side="left", padx=(0, 5))
@@ -358,30 +358,30 @@ def add_trade_tab(notebook, font):
     ).pack(side="left", padx=10)
     
     # Main container split into left and right
-    main_container = tk.Frame(trade_frame, bg="#1e1e1e")
+    main_container = tk.Frame(trade_frame, bg="#2d2d2d")
     main_container.pack(fill="both", expand=True, padx=5, pady=5)
     
     # Team A Panel (Left)
-    team_a_frame = tk.Frame(main_container, bg="#1e1e1e", relief="ridge", bd=2)
+    team_a_frame = tk.Frame(main_container, bg="#2d2d2d", relief="ridge", bd=2)
     team_a_frame.pack(side="left", fill="both", expand=True, padx=(0, 5))
     
     team_a_label = tk.Label(
         team_a_frame,
         text="Team A",
         font=(font[0], font[1] + 2, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     )
     team_a_label.pack(pady=(5, 10))
     
     # Team A Entry
-    team_a_entry_frame = tk.Frame(team_a_frame, bg="#1e1e1e")
+    team_a_entry_frame = tk.Frame(team_a_frame, bg="#2d2d2d")
     team_a_entry_frame.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         team_a_entry_frame,
         text="Add Player:",
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
         font=font
     ).pack(side="left", padx=(0, 5))
@@ -400,7 +400,7 @@ def add_trade_tab(notebook, font):
     team_a_add_pick_btn.pack(side="left")
     
     # Team A Treeview
-    team_a_table_frame = tk.Frame(team_a_frame, bg="#1e1e1e")
+    team_a_table_frame = tk.Frame(team_a_frame, bg="#2d2d2d")
     team_a_table_frame.pack(fill="both", expand=True, padx=5, pady=5)
     
     team_a_vsb = ttk.Scrollbar(team_a_table_frame, orient="vertical")
@@ -446,14 +446,14 @@ def add_trade_tab(notebook, font):
     bind_player_card_right_click(team_a_table, team_a_player_data_map, lambda p: (p, get_player_type(p)))
     
     # Team A Summary
-    team_a_summary_frame = tk.Frame(team_a_frame, bg="#1e1e1e")
+    team_a_summary_frame = tk.Frame(team_a_frame, bg="#2d2d2d")
     team_a_summary_frame.pack(fill="x", padx=5, pady=5)
     
     team_a_summary_label = tk.Label(
         team_a_summary_frame,
         text="",
         font=font,
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
         justify="left",
         anchor="w"
@@ -461,26 +461,26 @@ def add_trade_tab(notebook, font):
     team_a_summary_label.pack(fill="x")
     
     # Team B Panel (Right)
-    team_b_frame = tk.Frame(main_container, bg="#1e1e1e", relief="ridge", bd=2)
+    team_b_frame = tk.Frame(main_container, bg="#2d2d2d", relief="ridge", bd=2)
     team_b_frame.pack(side="right", fill="both", expand=True, padx=(5, 0))
     
     team_b_label = tk.Label(
         team_b_frame,
         text="Team B",
         font=(font[0], font[1] + 2, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     )
     team_b_label.pack(pady=(5, 10))
     
     # Team B Entry
-    team_b_entry_frame = tk.Frame(team_b_frame, bg="#1e1e1e")
+    team_b_entry_frame = tk.Frame(team_b_frame, bg="#2d2d2d")
     team_b_entry_frame.pack(fill="x", padx=5, pady=5)
     
     tk.Label(
         team_b_entry_frame,
         text="Add Player:",
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
         font=font
     ).pack(side="left", padx=(0, 5))
@@ -499,7 +499,7 @@ def add_trade_tab(notebook, font):
     team_b_add_pick_btn.pack(side="left")
     
     # Team B Treeview
-    team_b_table_frame = tk.Frame(team_b_frame, bg="#1e1e1e")
+    team_b_table_frame = tk.Frame(team_b_frame, bg="#2d2d2d")
     team_b_table_frame.pack(fill="both", expand=True, padx=5, pady=5)
     
     team_b_vsb = ttk.Scrollbar(team_b_table_frame, orient="vertical")
@@ -539,14 +539,14 @@ def add_trade_tab(notebook, font):
     bind_player_card_right_click(team_b_table, team_b_player_data_map, lambda p: (p, get_player_type(p)))
     
     # Team B Summary
-    team_b_summary_frame = tk.Frame(team_b_frame, bg="#1e1e1e")
+    team_b_summary_frame = tk.Frame(team_b_frame, bg="#2d2d2d")
     team_b_summary_frame.pack(fill="x", padx=5, pady=5)
     
     team_b_summary_label = tk.Label(
         team_b_summary_frame,
         text="",
         font=font,
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
         justify="left",
         anchor="w"
@@ -554,26 +554,26 @@ def add_trade_tab(notebook, font):
     team_b_summary_label.pack(fill="x")
     
     # Comparison Section (Bottom)
-    comparison_frame = tk.Frame(trade_frame, bg="#1e1e1e", relief="ridge", bd=2)
+    comparison_frame = tk.Frame(trade_frame, bg="#2d2d2d", relief="ridge", bd=2)
     comparison_frame.pack(fill="x", padx=5, pady=5)
     
     comparison_label = tk.Label(
         comparison_frame,
         text="Trade Comparison",
         font=(font[0], font[1] + 2, "bold"),
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#00ff7f"
     )
     comparison_label.pack(pady=(5, 10))
     
-    comparison_content = tk.Frame(comparison_frame, bg="#1e1e1e")
+    comparison_content = tk.Frame(comparison_frame, bg="#2d2d2d")
     comparison_content.pack(fill="x", padx=10, pady=5)
     
     comparison_text = tk.Label(
         comparison_content,
         text="",
         font=font,
-        bg="#1e1e1e",
+        bg="#2d2d2d",
         fg="#d4d4d4",
         justify="left",
         anchor="w"
@@ -620,7 +620,7 @@ def add_trade_tab(notebook, font):
     
     def create_autocomplete_entry(parent_frame, entry_var, on_select_callback_ref):
         """Create an entry widget with autocomplete dropdown"""
-        entry_frame = tk.Frame(parent_frame, bg="#1e1e1e")
+        entry_frame = tk.Frame(parent_frame, bg="#2d2d2d")
         
         entry = tk.Entry(
             entry_frame,
@@ -641,7 +641,7 @@ def add_trade_tab(notebook, font):
         # Create dropdown listbox as child of root window (initially hidden)
         dropdown = tk.Listbox(
             root,
-            bg="#1e1e1e",
+            bg="#2d2d2d",
             fg="#d4d4d4",
             selectbackground="#0078d7",
             selectforeground="#ffffff",
@@ -1024,7 +1024,7 @@ def add_trade_tab(notebook, font):
         """Show dialog to add a draft pick"""
         dialog = tk.Toplevel()
         dialog.title(f"Add Draft Pick - {team_name}")
-        dialog.configure(bg="#1e1e1e")
+        dialog.configure(bg="#2d2d2d")
         dialog.transient()
         dialog.grab_set()
         
@@ -1037,13 +1037,13 @@ def add_trade_tab(notebook, font):
         dialog.geometry(f"{width}x{height}+{x}+{y}")
         
         # Round selection
-        round_frame = tk.Frame(dialog, bg="#1e1e1e")
+        round_frame = tk.Frame(dialog, bg="#2d2d2d")
         round_frame.pack(fill="x", padx=15, pady=(15, 10))
         
         tk.Label(
             round_frame,
             text="Round:",
-            bg="#1e1e1e",
+            bg="#2d2d2d",
             fg="#d4d4d4",
             font=font
         ).pack(side="left", padx=(0, 10))
@@ -1059,16 +1059,16 @@ def add_trade_tab(notebook, font):
         round_combo.pack(side="left")
         
         # Position in standings - use a two-row layout for clarity
-        position_frame = tk.Frame(dialog, bg="#1e1e1e")
+        position_frame = tk.Frame(dialog, bg="#2d2d2d")
         position_frame.pack(fill="x", padx=15, pady=10)
         
-        position_label_frame = tk.Frame(position_frame, bg="#1e1e1e")
+        position_label_frame = tk.Frame(position_frame, bg="#2d2d2d")
         position_label_frame.pack(fill="x", pady=(0, 5))
         
         tk.Label(
             position_label_frame,
             text="Position in Standings:",
-            bg="#1e1e1e",
+            bg="#2d2d2d",
             fg="#d4d4d4",
             font=font
         ).pack(side="left")
@@ -1076,12 +1076,12 @@ def add_trade_tab(notebook, font):
         tk.Label(
             position_label_frame,
             text=f"(1 = best team, {num_teams} = worst team)",
-            bg="#1e1e1e",
+            bg="#2d2d2d",
             fg="#888888",
             font=(font[0], font[1] - 2)
         ).pack(side="left", padx=(10, 0))
         
-        position_input_frame = tk.Frame(position_frame, bg="#1e1e1e")
+        position_input_frame = tk.Frame(position_frame, bg="#2d2d2d")
         position_input_frame.pack(fill="x")
         
         position_var = tk.StringVar(value="14")
@@ -1100,7 +1100,7 @@ def add_trade_tab(notebook, font):
         value_label = tk.Label(
             dialog,
             text="Value: --",
-            bg="#1e1e1e",
+            bg="#2d2d2d",
             fg="#00ff7f",
             font=font
         )
@@ -1123,7 +1123,7 @@ def add_trade_tab(notebook, font):
         update_value_display()
         
         # Buttons
-        button_frame = tk.Frame(dialog, bg="#1e1e1e")
+        button_frame = tk.Frame(dialog, bg="#2d2d2d")
         button_frame.pack(pady=10)
         
         def add_pick():
