@@ -13,6 +13,7 @@ This is a fork of [zab1996/HectorOOTP](https://github.com/zab1996/HectorOOTP) th
 - **Stats-Based Evaluation**: Evaluate players based on actual performance stats (wRC+, WAR, ERA+, FIP, etc.) instead of just ratings
 - **Trade Analysis Tools**: Find trade targets with the Trade Finder tab - identify expiring veterans to sell and high-upside prospects to buy
 - **Contract Value Analysis**: Evaluate contract efficiency with $/WAR calculations, surplus value, and contract categories (Surplus, Albatross, Arb Target)
+- **Autocontract Generator**: Generate realistic competing contract offers for free agents with market-derived valuations, team archetypes, and customizable settings
 - **Platoon Finder**: Identify platoon opportunities by matching L/R batters at same positions, find DH candidates, and highlight platoon-proof switch hitters
 - **Trade Value Calculator**: Composite 1-100 trade value score for every player based on current production, future value, contract value, and position scarcity
 - **Percentile Rankings**: See where any player ranks league-wide for every meaningful metric with visual percentile bars
@@ -38,6 +39,7 @@ This is a fork of [zab1996/HectorOOTP](https://github.com/zab1996/HectorOOTP) th
   - [Auto-Generate Teams](#auto-generate-teams)
 - [Trade Finder Tab](#trade-finder-tab)
 - [Contract Value Tab](#contract-value-tab)
+- [Autocontract Generator](#autocontract-generator)
 - [Platoon Finder Tab](#platoon-finder-tab)
 - [Trade Value Calculator](#trade-value-calculator)
 - [Age Definitions](#age-definitions)
@@ -582,6 +584,74 @@ The following situations are flagged as concerns:
 - Age 30+ with ETY >= 5 (long extension for older player)
 - Fragile/Prone durability with big extension
 - Low OVR with long extension
+
+---
+
+## Autocontract Generator
+[⬆️ Back to Top](#top)
+
+The **Autocontract Generator** creates realistic competing contract offers for free agents, designed for single-player OOTP leagues where you want manual intervention with performance-based valuations.
+
+### Key Features
+
+**Market-Derived Valuation**
+- Automatically calculates $/WAR baseline from your loaded Player List.html data
+- Uses actual league salaries to determine market rates instead of hardcoded values
+- Can be manually overridden if desired
+
+**Team Archetype System**
+
+Five team types with different bidding behaviors:
+- **Dynasty** (1.15-1.35x multiplier): Will pay premium to keep core players
+- **Contender** (1.05-1.25x): Aggressive on impact players
+- **Window Builder** (0.90-1.10x): Selective spending on fits
+- **Rebuilding** (0.70-0.90x): Value deals only
+- **Tanking** (0.50-0.75x): Minimum viable contracts
+
+**Smart Contract Years**
+
+Age-based contract length calculation:
+- Age ≤ 26: 5-7 years
+- Age 27-29: 4-6 years
+- Age 30-32: 2-4 years
+- Age 33-35: 1-2 years
+- Age 36+: 1 year
+
+**Customizable Settings**
+- **Eye Test Weight** (0-30%): How much to blend OVR ratings with WAR-based valuation
+- **Market Randomness** (10-30%): Variance in offers to simulate unpredictability
+- **Hometown Discount** (5-15%): Optional discount for players with team tenure
+- **Number of Bidding Teams** (1-8): Control competition level
+- **Team Archetypes**: Select which types of teams are in the market
+
+**International Player Support**
+- For prospects without stats, enable International Mode
+- Input projected WAR manually
+- System applies higher randomness (25-30%) for uncertainty
+- Defaults to shorter contracts (2-4 years)
+
+### Usage Flow
+
+1. Export **Free Agents.html** from OOTP (same process as Player List.html)
+2. Click "Load Free Agents.html" in the Autocontract tab
+3. System auto-calculates $/WAR baseline from your Player List data
+4. Adjust market settings (or use calculated defaults)
+5. Select number of bidding teams and which archetypes should bid
+6. Click on a free agent in the list
+7. System generates competing contract offers sorted by total value
+8. Review offers with AAV, years, total value, and notes
+
+### Contract Offer Display
+
+Generated offers show:
+- **Team Archetype**: Type of team making the offer
+- **Years**: Length of contract
+- **AAV**: Average Annual Value in millions
+- **Total Value**: Full contract value
+- **Notes**: Explanation of premium/discount (e.g., "paying premium", "value seeking")
+- **🏠 Hometown offers**: Highlighted in gold with discount percentage
+
+Perfect for simulating free agency in commissioner-controlled leagues or adding realism to single-player careers!
 
 ---
 
