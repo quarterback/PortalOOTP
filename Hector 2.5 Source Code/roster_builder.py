@@ -15,6 +15,7 @@ from philosophy_profiles import (
 )
 from batter_stat_weights import stat_weights as batter_stat_weights, normalization as batter_normalization, MIN_PLATE_APPEARANCES
 from pitcher_stat_weights import stat_weights as pitcher_stat_weights, normalization as pitcher_normalization, MIN_INNINGS_PITCHED
+from advanced_stats import get_advanced_stats_score
 
 
 # Roster slot definitions
@@ -1340,6 +1341,7 @@ class RosterBuilder:
         age_score = self._score_age_curve(player, profile)
         position = player.get("POS", "")
         scarcity_score = self._score_positional_scarcity(player, position, player_type)
+        advanced_score = self._score_advanced_stats(player, player_type)
         
         components = {
             "current_stats": stats_score,
@@ -1348,6 +1350,7 @@ class RosterBuilder:
             "value_efficiency": value_score,
             "age_curve": age_score,
             "positional_scarcity": scarcity_score,
+            "advanced_stats": advanced_score,
         }
         
         # Calculate weighted composite
@@ -1612,6 +1615,16 @@ class RosterBuilder:
             score += 15
         
         return min(100, max(0, score))
+    
+    def _score_advanced_stats(self, player, player_type):
+        """
+        Score player based on advanced stats from the advanced_stats module.
+        Uses composite metrics like xWOBA, Contact+, Offensive Rating for batters
+        and Stuff+, K/BB, Pitcher Score for pitchers.
+        
+        Returns score 0-100.
+        """
+        return get_advanced_stats_score(player, player_type)
 
 
 def calculate_trade_availability(player, player_type="batter"):

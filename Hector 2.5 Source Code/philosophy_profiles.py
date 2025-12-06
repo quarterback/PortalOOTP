@@ -19,12 +19,13 @@ WEIGHT_TOLERANCE = 0.01
 
 # Default weight values for balanced evaluation
 DEFAULT_WEIGHTS = {
-    "current_stats": 0.25,
-    "current_ratings": 0.25,
-    "potential": 0.20,
+    "current_stats": 0.20,
+    "current_ratings": 0.20,
+    "potential": 0.18,
     "value_efficiency": 0.15,
     "age_curve": 0.10,
     "positional_scarcity": 0.05,
+    "advanced_stats": 0.12,
 }
 
 # Philosophy profile definitions
@@ -33,12 +34,13 @@ PHILOSOPHY_PROFILES = {
         "name": "Win Now",
         "description": "Maximize current production, ignore cost/future",
         "weights": {
-            "current_stats": 0.45,
-            "current_ratings": 0.30,
+            "current_stats": 0.40,
+            "current_ratings": 0.25,
             "potential": 0.05,
             "value_efficiency": 0.05,
             "age_curve": 0.10,
             "positional_scarcity": 0.05,
+            "advanced_stats": 0.10,
         },
         "constraints": {
             "max_age": 35,
@@ -54,12 +56,13 @@ PHILOSOPHY_PROFILES = {
         "name": "Sabermetric Value",
         "description": "Maximize WAR/$ and advanced metrics",
         "weights": {
-            "current_stats": 0.40,
-            "current_ratings": 0.15,
-            "potential": 0.15,
-            "value_efficiency": 0.25,
+            "current_stats": 0.30,
+            "current_ratings": 0.10,
+            "potential": 0.10,
+            "value_efficiency": 0.20,
             "age_curve": 0.05,
             "positional_scarcity": 0.00,
+            "advanced_stats": 0.25,
         },
         "constraints": {},
         "age_preferences": {
@@ -73,12 +76,13 @@ PHILOSOPHY_PROFILES = {
         "name": "Long-Term Upside",
         "description": "Build for 3-5 years out, prioritize potential",
         "weights": {
-            "current_stats": 0.15,
-            "current_ratings": 0.15,
-            "potential": 0.40,
+            "current_stats": 0.10,
+            "current_ratings": 0.10,
+            "potential": 0.35,
             "value_efficiency": 0.15,
             "age_curve": 0.15,
             "positional_scarcity": 0.00,
+            "advanced_stats": 0.15,
         },
         "constraints": {
             "max_age": 27,
@@ -95,12 +99,13 @@ PHILOSOPHY_PROFILES = {
         "name": "Balanced",
         "description": "Mix of win-now and future, avoid extremes",
         "weights": {
-            "current_stats": 0.25,
-            "current_ratings": 0.25,
-            "potential": 0.20,
+            "current_stats": 0.20,
+            "current_ratings": 0.20,
+            "potential": 0.18,
             "value_efficiency": 0.15,
             "age_curve": 0.10,
             "positional_scarcity": 0.05,
+            "advanced_stats": 0.12,
         },
         "constraints": {},
         "age_preferences": {
@@ -114,12 +119,13 @@ PHILOSOPHY_PROFILES = {
         "name": "Budget Conscious",
         "description": "Maximize value per dollar, cheap contracts",
         "weights": {
-            "current_stats": 0.20,
-            "current_ratings": 0.15,
+            "current_stats": 0.15,
+            "current_ratings": 0.10,
             "potential": 0.15,
-            "value_efficiency": 0.40,
+            "value_efficiency": 0.35,
             "age_curve": 0.05,
             "positional_scarcity": 0.05,
+            "advanced_stats": 0.15,
         },
         "constraints": {
             "max_salary_per_player": 15.0,
@@ -136,18 +142,39 @@ PHILOSOPHY_PROFILES = {
         "name": "Stars and Scrubs",
         "description": "Elite talent at key positions, minimum spend elsewhere",
         "weights": {
-            "current_stats": 0.35,
-            "current_ratings": 0.35,
+            "current_stats": 0.30,
+            "current_ratings": 0.30,
             "potential": 0.10,
             "value_efficiency": 0.10,
             "age_curve": 0.05,
             "positional_scarcity": 0.05,
+            "advanced_stats": 0.10,
         },
         "constraints": {},
         "age_preferences": {
             "ideal_min": 26,
             "ideal_max": 31,
             "acceptable_min": 24,
+            "acceptable_max": 34,
+        },
+    },
+    "analytics_heavy": {
+        "name": "Analytics-Heavy",
+        "description": "Prioritize advanced metrics over traditional ratings",
+        "weights": {
+            "current_stats": 0.20,
+            "current_ratings": 0.10,
+            "potential": 0.10,
+            "value_efficiency": 0.15,
+            "age_curve": 0.05,
+            "positional_scarcity": 0.05,
+            "advanced_stats": 0.35,
+        },
+        "constraints": {},
+        "age_preferences": {
+            "ideal_min": 24,
+            "ideal_max": 30,
+            "acceptable_min": 22,
             "acceptable_max": 34,
         },
     },

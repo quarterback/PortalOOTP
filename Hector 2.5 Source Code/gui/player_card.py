@@ -5,6 +5,14 @@ import tkinter as tk
 from tkinter import ttk
 from percentiles import get_percentile_calculator, PERCENTILE_TIERS
 from archetypes import get_player_archetype_fits, get_best_archetype, ARCHETYPES
+from advanced_stats import (
+    calculate_all_batter_advanced_stats,
+    calculate_all_pitcher_advanced_stats,
+)
+
+# Player card window dimensions
+PLAYER_CARD_WIDTH = 700
+PLAYER_CARD_HEIGHT = 780
 
 
 def show_player_card(parent, player, player_type="batter"):
@@ -19,7 +27,7 @@ def show_player_card(parent, player, player_type="batter"):
     # Create popup window
     popup = tk.Toplevel(parent)
     popup.title(f"Player Card - {player.get('Name', 'Unknown')}")
-    popup.geometry("650x650")
+    popup.geometry(f"{PLAYER_CARD_WIDTH}x{PLAYER_CARD_HEIGHT}")
     popup.configure(bg="#2d2d2d")
     
     # Make it modal-ish
@@ -350,6 +358,125 @@ def show_player_card(parent, player, player_type="batter"):
             bg="#2d2d2d",
             fg="#888888"
         ).pack(anchor="w", pady=5)
+    
+    # Advanced Stats Section
+    ttk.Separator(popup, orient="horizontal").pack(fill="x", padx=20, pady=10)
+    
+    advanced_frame = tk.Frame(popup, bg="#2d2d2d")
+    advanced_frame.pack(fill="x", padx=20, pady=5)
+    
+    tk.Label(
+        advanced_frame,
+        text="📊 Advanced Stats",
+        font=("Consolas", 12, "bold"),
+        bg="#2d2d2d",
+        fg="#4dabf7"
+    ).pack(anchor="w")
+    
+    # Calculate advanced stats
+    if player_type == "batter":
+        advanced_stats = player.get("advanced_stats") or calculate_all_batter_advanced_stats(player)
+        
+        # Display key batter metrics
+        stats_row1 = tk.Frame(advanced_frame, bg="#2d2d2d")
+        stats_row1.pack(fill="x", pady=2)
+        
+        for label, key, fmt in [
+            ("xBA", "xBA", ".3f"),
+            ("xSLG", "xSLG", ".3f"),
+            ("xWOBA", "xWOBA", ".3f"),
+            ("xOPS+", "xOPS+", ".0f"),
+        ]:
+            val = advanced_stats.get(key, 0)
+            tk.Label(
+                stats_row1,
+                text=f"{label}: {val:{fmt}}",
+                font=("Consolas", 10),
+                bg="#2d2d2d",
+                fg="#d4d4d4",
+                width=12
+            ).pack(side="left", padx=2)
+        
+        stats_row2 = tk.Frame(advanced_frame, bg="#2d2d2d")
+        stats_row2.pack(fill="x", pady=2)
+        
+        for label, key, fmt in [
+            ("Contact+", "Contact+", ".0f"),
+            ("Barrel%", "Barrel%", ".1f"),
+            ("Off.Rtg", "Offensive_Rating", ".0f"),
+            ("PwrSpd", "Power_Speed", ".1f"),
+        ]:
+            val = advanced_stats.get(key, 0)
+            tk.Label(
+                stats_row2,
+                text=f"{label}: {val:{fmt}}",
+                font=("Consolas", 10),
+                bg="#2d2d2d",
+                fg="#d4d4d4",
+                width=12
+            ).pack(side="left", padx=2)
+    else:
+        advanced_stats = player.get("advanced_stats") or calculate_all_pitcher_advanced_stats(player)
+        
+        # Display key pitcher metrics
+        stats_row = tk.Frame(advanced_frame, bg="#2d2d2d")
+        stats_row.pack(fill="x", pady=2)
+        
+        for label, key, fmt in [
+            ("Stuff+", "Stuff+", ".0f"),
+            ("K/BB", "K/BB", ".2f"),
+            ("xERA", "xERA", ".2f"),
+            ("Score", "Pitcher_Score", ".0f"),
+        ]:
+            val = advanced_stats.get(key, 0)
+            tk.Label(
+                stats_row,
+                text=f"{label}: {val:{fmt}}",
+                font=("Consolas", 10),
+                bg="#2d2d2d",
+                fg="#d4d4d4",
+                width=12
+            ).pack(side="left", padx=2)
+    
+    # Show indicators
+    undervalued = advanced_stats.get("Undervalued", {})
+    regression = advanced_stats.get("Regression", {})
+    breakout = advanced_stats.get("Breakout", {})
+    
+    indicators_row = tk.Frame(advanced_frame, bg="#2d2d2d")
+    indicators_row.pack(fill="x", pady=5)
+    
+    if undervalued.get("undervalued"):
+        tk.Label(
+            indicators_row,
+            text=f"💎 Undervalued: {undervalued.get('reason', '')}",
+            font=("Consolas", 9),
+            bg="#2d2d2d",
+            fg="#51cf66"
+        ).pack(side="left", padx=5)
+    
+    if regression.get("is_regression_candidate"):
+        direction = regression.get("direction", "neutral")
+        color = "#ff6b6b" if direction == "down" else "#4dabf7"
+        icon = "📉" if direction == "down" else "📈"
+        reasons = "; ".join(regression.get("reasons", []))
+        tk.Label(
+            indicators_row,
+            text=f"{icon} Regression: {reasons}",
+            font=("Consolas", 9),
+            bg="#2d2d2d",
+            fg=color
+        ).pack(side="left", padx=5)
+    
+    if breakout.get("is_breakout"):
+        indicators_text = ", ".join(breakout.get("indicators", [])[:2])
+        tk.Label(
+            indicators_row,
+            text=f"🚀 Breakout: {indicators_text}",
+            font=("Consolas", 9),
+            bg="#2d2d2d",
+            fg="#ffd43b"
+        ).pack(side="left", padx=5)
     
     # Close button
     close_btn = ttk.Button(popup, text="Close", command=popup.destroy)

@@ -21,7 +21,9 @@ from .contract_value_tab import add_contract_value_tab
 from .platoon_finder_tab import add_platoon_finder_tab
 from .hidden_gems_tab import add_hidden_gems_tab
 from .roster_builder_tab import add_roster_builder_tab
+from .advanced_stats_tab import add_advanced_stats_tab
 from percentiles import initialize_percentiles
+from advanced_stats import add_advanced_stats_to_players
 from .widgets import (
     create_title_label, create_summary_widgets, create_control_frame, update_summary_widgets,
     validate_fields, detect_wrong_import, show_loading_bar, set_app_icon
@@ -322,6 +324,7 @@ def build_gui():
             platoon_finder_tab = add_platoon_finder_tab(notebook, font)
             hidden_gems_tab = add_hidden_gems_tab(notebook, font)
             roster_builder_tab = add_roster_builder_tab(notebook, font)
+            advanced_stats_tab = add_advanced_stats_tab(notebook, font)
             root._gui_vars = {
                 "summary_left_var": summary_left_var,
                 "summary_right_var": summary_right_var,
@@ -336,6 +339,7 @@ def build_gui():
                 "platoon_finder_tab": platoon_finder_tab,
                 "hidden_gems_tab": hidden_gems_tab,
                 "roster_builder_tab": roster_builder_tab,
+                "advanced_stats_tab": advanced_stats_tab,
                 "font": font,
                 "notebook": notebook
             }
@@ -378,6 +382,7 @@ def build_gui():
                             platoon_finder_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             hidden_gems_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             roster_builder_tab.refresh(result_reload["pitchers"], result_reload["batters"])
+                            advanced_stats_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             update_summary_widgets(DATA, summary_left_var, summary_right_var)
                 check_reload()
             reload_btn.config(command=refresh_all_tabs)
@@ -405,6 +410,7 @@ def build_gui():
             platoon_finder_tab.refresh(result["pitchers"], result["batters"])
             hidden_gems_tab.refresh(result["pitchers"], result["batters"])
             roster_builder_tab.refresh(result["pitchers"], result["batters"])
+            advanced_stats_tab.refresh(result["pitchers"], result["batters"])
             update_summary_widgets(DATA, summary_left_var, summary_right_var)
 
     # Initial threaded load (while showing the loader)
