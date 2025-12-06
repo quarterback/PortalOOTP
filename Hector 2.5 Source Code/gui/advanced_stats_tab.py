@@ -59,6 +59,8 @@ def add_advanced_stats_tab(notebook, font):
     all_pitchers = []
     all_batters = []
     current_player_type = {"value": "batter"}
+    id_map = {}
+    player_data_map = {}
     
     # Header
     header_frame = tk.Frame(advanced_frame, bg="#2d2d2d")
@@ -302,9 +304,6 @@ def add_advanced_stats_tab(notebook, font):
     table._prev_hover = None
     table.bind("<Motion>", on_treeview_motion)
     table.bind("<Leave>", on_leave)
-    
-    id_map = {}
-    player_data_map = {}
     
     PITCHER_POSITIONS = {"SP", "RP", "CL", "P"}
     

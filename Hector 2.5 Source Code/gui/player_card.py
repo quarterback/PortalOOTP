@@ -10,6 +10,10 @@ from advanced_stats import (
     calculate_all_pitcher_advanced_stats,
 )
 
+# Player card window dimensions
+PLAYER_CARD_WIDTH = 700
+PLAYER_CARD_HEIGHT = 780
+
 
 def show_player_card(parent, player, player_type="batter"):
     """
@@ -23,7 +27,7 @@ def show_player_card(parent, player, player_type="batter"):
     # Create popup window
     popup = tk.Toplevel(parent)
     popup.title(f"Player Card - {player.get('Name', 'Unknown')}")
-    popup.geometry("700x780")
+    popup.geometry(f"{PLAYER_CARD_WIDTH}x{PLAYER_CARD_HEIGHT}")
     popup.configure(bg="#2d2d2d")
     
     # Make it modal-ish

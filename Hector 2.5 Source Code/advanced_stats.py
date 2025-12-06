@@ -50,7 +50,19 @@ BABIP_UNLUCKY_THRESHOLD = 0.260  # BABIP below this suggests positive regression
 
 # Age thresholds for breakout detection
 BREAKOUT_MAX_AGE = 27
-BREAKOUT_MIN_UPSIDE_GAP = 5  # POT - OVR gap for breakout candidates
+BREAKOUT_MIN_UPSIDE_GAP = 5  # POT - OVR gap for breakout candidates (20-80 scale)
+BREAKOUT_MIN_UPSIDE_GAP_STAR_SCALE = 0.5  # POT - OVR gap for breakout candidates (star scale)
+
+# Star scale conversion constants
+# For ratings on 1-5 star scale, convert to 20-80 equivalent
+# 3 stars = 50 (average), 1 star = 30, 5 stars = 70
+STAR_SCALE_BASE = 20
+STAR_SCALE_MULTIPLIER = 10
+
+# Power/HR rate scaling constants
+POWER_TO_HR_RATE_BASE = 30  # Subtract from power rating before scaling
+POWER_TO_HR_RATE_DIVISOR = 10  # Divide by this to get expected HR rate
+STAR_POWER_TO_HR_DIVISOR = 1.5  # For star scale power to HR rate
 
 
 def calculate_expected_batting_average(player):
@@ -177,13 +189,14 @@ def calculate_contact_plus(player):
     denominator = pa if pa > 0 else ab
     so_pct = (so / denominator * 100) if denominator > 0 else 20  # Default 20% K rate
     
-    # Normalize contact to 50-based scale if it's on 20-80 scale
+    # Normalize contact to 50-based scale
     if contact > 10:
-        # On 20-80 scale, normalize to 50 base
+        # On 20-80 scale, use as-is (50 is average)
         contact_normalized = contact
     else:
-        # Star scale, convert to 20-80 equivalent
-        contact_normalized = contact * 12  # 5 stars = 60
+        # Star scale: convert to 20-80 equivalent
+        # 3 stars = 50 (average), 1 star = 30, 5 stars = 70
+        contact_normalized = STAR_SCALE_BASE + (contact * STAR_SCALE_MULTIPLIER)
     
     contact_plus = 100 + ((contact_normalized - 50) * 1.5) + ((100 - so_pct) * 0.75)
     return round(max(0, contact_plus), 1)
@@ -298,9 +311,11 @@ def calculate_expected_hr_pct(player):
     
     # Expected HR rate from power rating
     if power > 10:
-        expected_from_power = (power - 30) / 10  # Scale 20-80 to ~0-5%
+        # Scale 20-80 to ~0-5%: (power - 30) / 10
+        expected_from_power = (power - POWER_TO_HR_RATE_BASE) / POWER_TO_HR_RATE_DIVISOR
     else:
-        expected_from_power = power / 1.5  # Star scale to percentage
+        # Star scale to percentage
+        expected_from_power = power / STAR_POWER_TO_HR_DIVISOR
     
     # Blend actual and expected
     xhr_pct = (hr_pct * 0.7) + (max(0, expected_from_power) * 0.3)
@@ -868,7 +883,7 @@ def is_breakout_candidate(player, player_type="batter"):
     if ovr > 10:
         min_gap = BREAKOUT_MIN_UPSIDE_GAP
     else:
-        min_gap = 0.5  # Star scale equivalent
+        min_gap = BREAKOUT_MIN_UPSIDE_GAP_STAR_SCALE
     
     if upside_gap < min_gap:
         return {"is_breakout": False, "reason": "Limited upside"}
