@@ -22,6 +22,7 @@ from .platoon_finder_tab import add_platoon_finder_tab
 from .hidden_gems_tab import add_hidden_gems_tab
 from .roster_builder_tab import add_roster_builder_tab
 from .advanced_stats_tab import add_advanced_stats_tab
+from .auto_contract_tab import add_auto_contract_tab
 from percentiles import initialize_percentiles
 from advanced_stats import add_advanced_stats_to_players
 from .widgets import (
@@ -325,6 +326,8 @@ def build_gui():
             hidden_gems_tab = add_hidden_gems_tab(notebook, font)
             roster_builder_tab = add_roster_builder_tab(notebook, font)
             advanced_stats_tab = add_advanced_stats_tab(notebook, font)
+            auto_contract_tab = add_auto_contract_tab(notebook, font)
+            auto_contract_tab = add_auto_contract_tab(notebook, font)
             root._gui_vars = {
                 "summary_left_var": summary_left_var,
                 "summary_right_var": summary_right_var,
@@ -340,6 +343,7 @@ def build_gui():
                 "hidden_gems_tab": hidden_gems_tab,
                 "roster_builder_tab": roster_builder_tab,
                 "advanced_stats_tab": advanced_stats_tab,
+                "auto_contract_tab": auto_contract_tab,
                 "font": font,
                 "notebook": notebook
             }
@@ -383,6 +387,7 @@ def build_gui():
                             hidden_gems_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             roster_builder_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             advanced_stats_tab.refresh(result_reload["pitchers"], result_reload["batters"])
+                            auto_contract_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             update_summary_widgets(DATA, summary_left_var, summary_right_var)
                 check_reload()
             reload_btn.config(command=refresh_all_tabs)
@@ -411,6 +416,7 @@ def build_gui():
             hidden_gems_tab.refresh(result["pitchers"], result["batters"])
             roster_builder_tab.refresh(result["pitchers"], result["batters"])
             advanced_stats_tab.refresh(result["pitchers"], result["batters"])
+            auto_contract_tab.refresh(result["pitchers"], result["batters"])
             update_summary_widgets(DATA, summary_left_var, summary_right_var)
 
     # Initial threaded load (while showing the loader)
