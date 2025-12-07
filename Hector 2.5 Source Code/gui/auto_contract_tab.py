@@ -8,9 +8,12 @@ from auto_contract import (
     TeamArchetype,
     generate_contract_offers,
     parse_player_from_dict,
-    calculate_market_dollar_per_war
+    calculate_market_dollar_per_war,
+    calculate_ovr_percentile,
+    war_from_percentile
 )
 from html_parser import parse_players_from_html
+from player_utils import parse_star_rating, get_war
 
 # Theme colors
 DARK_BG = "#2d2d2d"
@@ -199,6 +202,38 @@ def add_auto_contract_tab(notebook, font):
     dollar_per_war_entry.pack(side="left", padx=5)
     tk.Label(war_frame, text="(millions)", bg=DARK_BG, fg="#888888", font=(font[0], font[1] - 1)).pack(side="left")
     
+    # Lock $/WAR checkbox
+    lock_war_var = tk.BooleanVar(value=False)
+    lock_war_check = tk.Checkbutton(
+        war_frame,
+        text="Lock",
+        variable=lock_war_var,
+        bg=DARK_BG,
+        fg="#d4d4d4",
+        selectcolor=DARK_BG,
+        activebackground=DARK_BG,
+        activeforeground=NEON_GREEN,
+        font=font
+    )
+    lock_war_check.pack(side="left", padx=5)
+    
+    # League Scale Multiplier
+    scale_frame = tk.Frame(market_frame, bg=DARK_BG)
+    scale_frame.pack(fill="x", padx=5, pady=2)
+    
+    tk.Label(scale_frame, text="League Scale Multiplier:", bg=DARK_BG, fg="#d4d4d4", font=font).pack(side="left")
+    league_scale_var = tk.StringVar(value="1.0")
+    league_scale_entry = tk.Entry(
+        scale_frame,
+        textvariable=league_scale_var,
+        width=8,
+        bg="#000000",
+        fg="#d4d4d4",
+        font=font
+    )
+    league_scale_entry.pack(side="left", padx=5)
+    tk.Label(scale_frame, text="(0.1-3.0)", bg=DARK_BG, fg="#888888", font=(font[0], font[1] - 1)).pack(side="left")
+    
     # Eye Test Weight
     eye_test_frame = tk.Frame(market_frame, bg=DARK_BG)
     eye_test_frame.pack(fill="x", padx=5, pady=2)
@@ -341,10 +376,13 @@ def add_auto_contract_tab(notebook, font):
         check.pack(anchor="w")
     
     # International Mode
+    intl_mode_frame = tk.Frame(gen_frame, bg=DARK_BG)
+    intl_mode_frame.pack(fill="x", padx=5, pady=5)
+    
     international_var = tk.BooleanVar(value=False)
     international_check = tk.Checkbutton(
-        gen_frame,
-        text="International Mode (manual WAR input)",
+        intl_mode_frame,
+        text="Override WAR (manual input)",
         variable=international_var,
         bg=DARK_BG,
         fg="#d4d4d4",
@@ -353,7 +391,18 @@ def add_auto_contract_tab(notebook, font):
         activeforeground=NEON_GREEN,
         font=font
     )
-    international_check.pack(anchor="w", padx=5, pady=5)
+    international_check.pack(side="left")
+    
+    # Help text for international mode
+    tk.Label(
+        gen_frame,
+        text="Note: Players with no WAR data automatically use OVR-percentile valuation",
+        bg=DARK_BG,
+        fg="#888888",
+        font=(font[0], font[1] - 1),
+        wraplength=350,
+        justify="left"
+    ).pack(anchor="w", padx=10, pady=(0, 5))
     
     # International WAR input (hidden by default)
     intl_war_frame = tk.Frame(gen_frame, bg=DARK_BG)
@@ -431,10 +480,24 @@ def add_auto_contract_tab(notebook, font):
         
         ovr = player.get("OVR", "-")
         
-        info_text = (
-            f"{name} - {pos}, Age {age}\n"
-            f"WAR: {war} | {stat_name}: {stat_plus} | OVR: {ovr}"
-        )
+        # Check if player has no WAR data but has OVR - show percentile info
+        war_numeric = get_war(player, player_type)
+        ovr_numeric = parse_star_rating(ovr)
+        
+        if war_numeric == 0 and ovr_numeric > 0 and free_agents:
+            # Calculate OVR percentile
+            percentile = calculate_ovr_percentile(ovr_numeric, free_agents)
+            projected_war = war_from_percentile(percentile)
+            info_text = (
+                f"{name} - {pos}, Age {age}\n"
+                f"WAR: {war} | {stat_name}: {stat_plus} | OVR: {ovr}\n"
+                f"OVR Percentile: {percentile:.1f}% of FA pool → Projected WAR: {projected_war:.2f}"
+            )
+        else:
+            info_text = (
+                f"{name} - {pos}, Age {age}\n"
+                f"WAR: {war} | {stat_name}: {stat_plus} | OVR: {ovr}"
+            )
         
         player_info_label.config(text=info_text)
     
@@ -520,6 +583,13 @@ def add_auto_contract_tab(notebook, font):
         except ValueError:
             num_bidding_teams = 5
         
+        try:
+            league_scale = float(league_scale_var.get())
+            # Clamp to valid range
+            league_scale = max(0.1, min(3.0, league_scale))
+        except ValueError:
+            league_scale = 1.0
+        
         # Get selected archetypes
         selected_archetypes = [
             archetype for archetype, var in archetype_vars.items()
@@ -545,7 +615,8 @@ def add_auto_contract_tab(notebook, font):
         player_input = parse_player_from_dict(
             player,
             is_international=is_international,
-            projected_war=projected_war
+            projected_war=projected_war,
+            free_agent_pool=free_agents
         )
         
         # Generate offers
@@ -556,7 +627,8 @@ def add_auto_contract_tab(notebook, font):
             market_randomness=market_randomness,
             hometown_discount_pct=hometown_discount_pct if hometown_var.get() else 0.0,
             num_bidding_teams=num_bidding_teams,
-            team_archetypes=selected_archetypes
+            team_archetypes=selected_archetypes,
+            league_scale_multiplier=league_scale
         )
         
         # Display offers
@@ -623,8 +695,8 @@ def add_auto_contract_tab(notebook, font):
             all_players.extend(pitchers)
             all_players.extend(batters)
             
-            # Auto-calculate market rate
-            if all_players:
+            # Auto-calculate market rate only if not locked
+            if all_players and not lock_war_var.get():
                 rate = calculate_market_dollar_per_war(all_players)
                 market_dollar_per_war[0] = rate
                 dollar_per_war_var.set(f"{rate:.2f}")

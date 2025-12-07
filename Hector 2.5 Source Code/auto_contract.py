@@ -82,6 +82,87 @@ def calculate_market_dollar_per_war(players):
     return ratios[median_index]
 
 
+def calculate_ovr_percentile(player_ovr, free_agent_pool):
+    """
+    Calculate a player's percentile rank within the free agent pool based on OVR.
+    
+    Args:
+        player_ovr: The player's OVR rating (int or float)
+        free_agent_pool: List of player dicts from the free agent pool
+    
+    Returns:
+        Percentile rank (0-100) where 100 is the best player in the pool
+    """
+    if not free_agent_pool:
+        return 50.0  # Default to median if no pool data
+    
+    # Extract OVR values from all players in the pool
+    pool_ovr_values = []
+    for player in free_agent_pool:
+        ovr = parse_star_rating(player.get("OVR", 0))
+        if ovr > 0:
+            pool_ovr_values.append(ovr)
+    
+    if not pool_ovr_values:
+        return 50.0  # Default to median if no valid OVR data
+    
+    # Count how many players have OVR less than the player's OVR
+    players_below = sum(1 for ovr in pool_ovr_values if ovr < player_ovr)
+    
+    # Calculate percentile
+    percentile = (players_below / len(pool_ovr_values)) * 100
+    
+    return percentile
+
+
+def war_from_percentile(percentile):
+    """
+    Convert a percentile rank to an estimated WAR value.
+    
+    Uses a curve that maps percentile to WAR:
+    - 99th percentile = ~6 WAR (elite)
+    - 90th percentile = ~4 WAR (star)
+    - 75th percentile = ~2.5 WAR (solid)
+    - 50th percentile = ~1 WAR (average)
+    - 25th percentile = ~0.5 WAR (below average)
+    - 10th percentile = ~0.2 WAR (replacement level)
+    
+    Args:
+        percentile: Percentile rank (0-100)
+    
+    Returns:
+        Estimated WAR value
+    """
+    # Clamp percentile to valid range
+    percentile = max(0.0, min(100.0, percentile))
+    
+    # Use a non-linear curve for WAR mapping
+    # Higher percentiles get exponentially higher WAR
+    if percentile >= 99:
+        return 6.0
+    elif percentile >= 95:
+        # 95-99: 4.5-6 WAR
+        return 4.5 + ((percentile - 95) / 4) * 1.5
+    elif percentile >= 90:
+        # 90-95: 4-4.5 WAR
+        return 4.0 + ((percentile - 90) / 5) * 0.5
+    elif percentile >= 75:
+        # 75-90: 2.5-4 WAR
+        return 2.5 + ((percentile - 75) / 15) * 1.5
+    elif percentile >= 50:
+        # 50-75: 1-2.5 WAR
+        return 1.0 + ((percentile - 50) / 25) * 1.5
+    elif percentile >= 25:
+        # 25-50: 0.5-1 WAR
+        return 0.5 + ((percentile - 25) / 25) * 0.5
+    elif percentile >= 10:
+        # 10-25: 0.2-0.5 WAR
+        return 0.2 + ((percentile - 10) / 15) * 0.3
+    else:
+        # 0-10: 0-0.2 WAR
+        return (percentile / 10) * 0.2
+
+
 def calculate_contract_years(age):
     """
     Calculate contract years based on player age.
@@ -131,6 +212,7 @@ def generate_contract_offers(
     hometown_discount_pct: float = 0.10,
     num_bidding_teams: int = 5,
     team_archetypes: List[TeamArchetype] = None,
+    league_scale_multiplier: float = 1.0,
 ) -> List[ContractOffer]:
     """
     Generate competing contract offers for a free agent.
@@ -143,6 +225,7 @@ def generate_contract_offers(
         hometown_discount_pct: Hometown discount percentage (0.05-0.15)
         num_bidding_teams: Number of teams bidding (1-8)
         team_archetypes: List of archetypes that should bid (default: all)
+        league_scale_multiplier: Multiplier for all contract values (0.1-3.0)
     
     Returns:
         List of ContractOffer objects sorted by total value (descending)
@@ -212,6 +295,9 @@ def generate_contract_offers(
         # Calculate offer AAV
         offer_aav = base_aav * archetype_mult * randomness_mult
         
+        # Apply league scale multiplier
+        offer_aav = offer_aav * league_scale_multiplier
+        
         # Determine contract years
         min_years, max_years = calculate_contract_years(player_input.age)
         
@@ -254,7 +340,7 @@ def generate_contract_offers(
     if player_input.years_with_team > 0:
         # Generate a hometown discount offer
         discount_mult = 1.0 - hometown_discount_pct
-        hometown_aav = base_aav * discount_mult
+        hometown_aav = base_aav * discount_mult * league_scale_multiplier
         
         # Hometown deals tend to be longer (loyalty)
         min_years, max_years = calculate_contract_years(player_input.age)
@@ -277,7 +363,7 @@ def generate_contract_offers(
     return offers
 
 
-def parse_player_from_dict(player_dict, is_international=False, projected_war=None):
+def parse_player_from_dict(player_dict, is_international=False, projected_war=None, free_agent_pool=None):
     """
     Convert a player dictionary (from HTML parsing) to PlayerContractInput.
     
@@ -285,6 +371,7 @@ def parse_player_from_dict(player_dict, is_international=False, projected_war=No
         player_dict: Player dictionary from parse_players_from_html()
         is_international: Whether player is international (no stats)
         projected_war: Manual projected WAR for international players
+        free_agent_pool: List of all free agents for OVR-percentile calculation
     
     Returns:
         PlayerContractInput object
@@ -317,6 +404,13 @@ def parse_player_from_dict(player_dict, is_international=False, projected_war=No
     ovr_rating = parse_star_rating(player_dict.get("OVR", 0))
     if ovr_rating == 0:
         ovr_rating = None
+    
+    # If player has no WAR data and has OVR, use OVR-percentile mode
+    if war == 0 and ovr_rating is not None and free_agent_pool is not None:
+        # Automatically calculate WAR from OVR percentile
+        percentile = calculate_ovr_percentile(ovr_rating, free_agent_pool)
+        projected_war = war_from_percentile(percentile)
+        is_international = True  # Treat as international (OVR-based valuation)
     
     # Years with team (not available in standard export, would need custom field)
     years_with_team = 0
