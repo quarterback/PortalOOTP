@@ -95,6 +95,8 @@ def build_gui():
         batters = []
         teams_by_abbr = {}  # Team data keyed by abbreviation
         team_data_loaded = False  # Track if team data was successfully loaded
+        free_agents = []  # Free agent data from Free Agents.html
+        free_agents_loaded = False  # Track if free agent data was successfully loaded
 
     def load_team_data():
         """
@@ -120,6 +122,30 @@ def build_gui():
             # Catch unexpected errors but don't crash the app
             print(f"Warning: Unexpected error loading team data: {e}")
             return {}, False
+
+    def load_free_agents_data():
+        """
+        Load free agents from Free Agents.html.
+        Returns list of free agents, or empty list if file not found.
+        """
+        free_agents_file_path = "Free Agents.html"
+        
+        if not os.path.exists(free_agents_file_path):
+            return [], False
+        
+        try:
+            free_agents = parse_players_from_html(free_agents_file_path)
+            if free_agents:
+                return free_agents, True
+            return [], False
+        except (ValueError, IOError, UnicodeDecodeError) as e:
+            # Log specific parsing errors but continue gracefully
+            print(f"Warning: Could not parse Free Agents.html: {e}")
+            return [], False
+        except Exception as e:
+            # Catch unexpected errors but don't crash the app
+            print(f"Warning: Unexpected error loading free agents data: {e}")
+            return [], False
 
     def choose_and_load_file(result):
         reload_weights()
@@ -205,6 +231,11 @@ def build_gui():
                 DATA.teams_by_abbr, DATA.team_data_loaded = load_team_data()
                 result["teams_by_abbr"] = DATA.teams_by_abbr
                 result["team_data_loaded"] = DATA.team_data_loaded
+                
+                # Load free agents data (optional - app continues if not found)
+                DATA.free_agents, DATA.free_agents_loaded = load_free_agents_data()
+                result["free_agents"] = DATA.free_agents
+                result["free_agents_loaded"] = DATA.free_agents_loaded
                 
                 # Show warning if team data not loaded (don't crash, just reduced functionality)
                 if not DATA.team_data_loaded:
@@ -324,7 +355,11 @@ def build_gui():
                             hidden_gems_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             roster_builder_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             advanced_stats_tab.refresh(result_reload["pitchers"], result_reload["batters"])
-                            auto_contract_tab.refresh(result_reload["pitchers"], result_reload["batters"])
+                            auto_contract_tab.refresh(
+                                result_reload["pitchers"], 
+                                result_reload["batters"],
+                                result_reload.get("free_agents", [])
+                            )
                             update_summary_widgets(DATA, summary_left_var, summary_right_var)
                 check_reload()
             reload_btn.config(command=refresh_all_tabs)
@@ -353,7 +388,11 @@ def build_gui():
             hidden_gems_tab.refresh(result["pitchers"], result["batters"])
             roster_builder_tab.refresh(result["pitchers"], result["batters"])
             advanced_stats_tab.refresh(result["pitchers"], result["batters"])
-            auto_contract_tab.refresh(result["pitchers"], result["batters"])
+            auto_contract_tab.refresh(
+                result["pitchers"], 
+                result["batters"],
+                result.get("free_agents", [])
+            )
             update_summary_widgets(DATA, summary_left_var, summary_right_var)
 
     # Initial threaded load (while showing the loader)

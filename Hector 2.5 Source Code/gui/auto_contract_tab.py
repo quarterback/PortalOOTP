@@ -50,7 +50,7 @@ def add_auto_contract_tab(notebook, font):
         fg=NEON_GREEN
     ).pack(side="left")
     
-    # Load button
+    # Load button (now used for reloading)
     def load_free_agents():
         """Load free agents from Free Agents.html"""
         file_path = "Free Agents.html"
@@ -64,7 +64,7 @@ def add_auto_contract_tab(notebook, font):
             
             messagebox.showinfo(
                 "Success",
-                f"Loaded {len(free_agents)} free agents from Free Agents.html"
+                f"Reloaded {len(free_agents)} free agents from Free Agents.html"
             )
         except FileNotFoundError:
             messagebox.showerror(
@@ -78,7 +78,7 @@ def add_auto_contract_tab(notebook, font):
                 f"Error loading Free Agents.html:\n\n{str(e)}"
             )
     
-    load_btn = ttk.Button(fa_header, text="Load Free Agents.html", command=load_free_agents)
+    load_btn = ttk.Button(fa_header, text="Reload Free Agents", command=load_free_agents)
     load_btn.pack(side="right", padx=5)
     
     # Free Agents Treeview
@@ -304,7 +304,7 @@ def add_auto_contract_tab(notebook, font):
     num_teams_combo = ttk.Combobox(
         teams_frame,
         textvariable=num_teams_var,
-        values=["1", "2", "3", "4", "5", "6", "7", "8"],
+        values=[str(i) for i in range(1, 21)],
         state="readonly",
         width=5
     )
@@ -617,7 +617,7 @@ def add_auto_contract_tab(notebook, font):
     
     # Tab refresh class
     class AutoContractTab:
-        def refresh(self, pitchers, batters):
+        def refresh(self, pitchers, batters, free_agents_data=None):
             """Refresh with new player data"""
             all_players.clear()
             all_players.extend(pitchers)
@@ -628,5 +628,11 @@ def add_auto_contract_tab(notebook, font):
                 rate = calculate_market_dollar_per_war(all_players)
                 market_dollar_per_war[0] = rate
                 dollar_per_war_var.set(f"{rate:.2f}")
+            
+            # Load free agents if provided
+            if free_agents_data:
+                free_agents.clear()
+                free_agents.extend(free_agents_data)
+                update_free_agents_tree()
     
     return AutoContractTab()
