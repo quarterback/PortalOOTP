@@ -4,7 +4,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  Hector 2.7 - OOTP Analyzer                                             │
+│  Rosterlytics 2.7 - OOTP Analyzer                                       │
 ├─────────────────────────────────────────────────────────────────────────┤
 │ Tabs: [Pitchers][Batters][Teams][Trade][Contract][Trade Finder]...     │
 │       ...["Autocontract"]                         👈 NEW TAB            │
@@ -60,7 +60,7 @@ In OOTP, go to:
 1. League → Reports → Player Reports
 2. Filter for Free Agents
 3. Export as HTML (same process as Player List)
-4. Save as "Free Agents.html" in the Hector directory
+4. Save as "Free Agents.html" in the Rosterlytics directory
 
 ### Step 2: Load Free Agents
 ```

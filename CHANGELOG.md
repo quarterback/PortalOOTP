@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Hector OOTP Analyzer will be documented in this file.
+All notable changes to Rosterlytics (formerly Hector OOTP Analyzer) will be documented in this file.
 
 ## [2.7] - 2025-12-04
 

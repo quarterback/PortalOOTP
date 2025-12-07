@@ -80,7 +80,7 @@ def reload_weights():
 def build_gui():
     root = tk.Tk()
     set_app_icon(root)
-    root.title("Hector 2.7")
+    root.title("Rosterlytics 2.7")
     root.geometry("1800x950")
     root.configure(bg=DARK_BG)
 
@@ -275,7 +275,7 @@ def build_gui():
         
         if not after_reload:
             # Main UI
-            title = create_title_label(root, font, "Hector 2.7 - OOTP Analyzer")
+            title = create_title_label(root, font, "Rosterlytics 2.7 - OOTP Analyzer")
             title.pack(fill="x", padx=10, pady=5)
             summary_frame, summary_left_var, summary_right_var = create_summary_widgets(root, font)
             summary_frame.pack(fill="x", padx=10)

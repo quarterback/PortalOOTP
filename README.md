@@ -1,33 +1,79 @@
 <a name="top"></a>
 
-# Hector OOTP Analyzer
+# Rosterlytics
 
-Hector is a powerful and fully customizable desktop analytics tool for Out of the Park Baseball (OOTP) leagues. Built for both casual GMs and competitive online leagues, Hector imports your exported HTML data and delivers clear, actionable insights with a dark-mode UI. Get in-depth, sortable breakdowns for every player and team, intelligent highlights, advanced filters, and direct Stats+ integration—helping you evaluate talent, find hidden gems, and make smart roster moves.
+**Advanced analytics and roster management for Out of the Park Baseball (OOTP)**
+
+Rosterlytics is a powerful desktop analytics tool for OOTP leagues, providing stats-based player evaluation, trade analysis, contract optimization, and roster building tools. Built for both casual GMs and competitive online leagues, it transforms your exported HTML data into actionable insights with an intuitive dark-mode interface.
 
 ---
 
-## Fork Overview
+## What is Rosterlytics?
 
-This is a fork of [zab1996/HectorOOTP](https://github.com/zab1996/HectorOOTP) that adds several new features:
+Rosterlytics is a feature-rich fork of the original <a href="https://github.com/zab1996/HectorOOTP">Hector OOTP Analyzer</a> by zab1996, significantly enhanced with stats-based scoring, percentile rankings, advanced trade tools, contract analysis, and comprehensive roster building features. While it maintains the core player evaluation engine, Rosterlytics adds an extensive suite of new capabilities that help you discover hidden gems, optimize your roster, and make smarter trades.
 
-- **Stats-Based Evaluation**: Evaluate players based on actual performance stats (wRC+, WAR, ERA+, FIP, etc.) instead of just ratings
-- **Trade Analysis Tools**: Find trade targets with the Trade Finder tab - identify expiring veterans to sell and high-upside prospects to buy
-- **Contract Value Analysis**: Evaluate contract efficiency with $/WAR calculations, surplus value, and contract categories (Surplus, Albatross, Arb Target)
-- **Autocontract Generator**: Generate realistic competing contract offers for free agents with market-derived valuations, team archetypes, and customizable settings
-- **Platoon Finder**: Identify platoon opportunities by matching L/R batters at same positions, find DH candidates, and highlight platoon-proof switch hitters
-- **Trade Value Calculator**: Composite 1-100 trade value score for every player based on current production, future value, contract value, and position scarcity
-- **Percentile Rankings**: See where any player ranks league-wide for every meaningful metric with visual percentile bars
-- **Hidden Gems Finder**: Discover overlooked players across the league in categories like AAAA players, late bloomers, miscast players, and more
-- **Franchise Archetypes**: Filter and find players that fit your desired team-building philosophy (Speed & Defense, Mashers, Moneyball, etc.)
-- **Roster Builder Sandbox**: Build hypothetical rosters by selecting players from any team - full GM simulation mode
-- **Auto-Generate Rosters**: Automatically build complete teams with randomized player selection based on competitive level, budget, and team identity preferences
-- **Mac Compatible**: Can run from source with Python on macOS (see [Running on Mac](#running-on-mac))
+---
+
+## What's New in Rosterlytics
+
+Rosterlytics adds these major feature categories beyond the original Hector:
+
+### 🎯 Evaluation & Analysis Tools
+
+| Feature | Description |
+|---------|-------------|
+| **Stats-Based Scoring** | Evaluate players on actual performance stats (wRC+, WAR, ERA+, FIP, etc.) instead of just ratings. Automatic fallback to ratings-only for small samples. |
+| **Percentile Rankings** | League-wide percentile rankings with visual bars and tier indicators (💎 Elite, ⭐ Above Avg, ✅ Average, 📉 Below Avg, ❌ Poor). Covers all key stats and ratings. |
+| **Trade Value Calculator** | Composite 1-100 trade value score based on current production (35%), future value (30%), contract value (25%), and position scarcity (10%). |
+| **Player Card Popup** | Right-click any player anywhere in the app for detailed percentile breakdown, best/worst stats summary, and archetype fits. Works in all tabs. |
+
+### 🔍 Discovery Tools
+
+| Feature | Description |
+|---------|-------------|
+| **Hidden Gems Finder** | Find overlooked players across six categories: AAAA Players, Late Bloomers, Miscast Players, Undervalued Veterans, Toolsy Gambles, Reliever Converts. |
+| **Franchise Archetypes** | 17 team-building philosophies including traditional (Speed & Defense, Mashers, Moneyball, Youth Movement, Win Now, Budget Build, Balanced) and unconventional (Chaos Ball, Small Ball, Ace Hunter, Bullpen-First, Platoon Army, Launch Angle Era, Defense Wins, Prospect Pipeline, Veteran Presence, Innings Eaters). Each player gets fit scores (0-100) for every archetype. |
+
+### 📊 Trade Tools
+
+| Feature | Description |
+|---------|-------------|
+| **Trade Finder Tab** | Two-panel interface showing expiring veterans to sell high (age 27+, 1 year left, producing) and high-upside prospects to buy low (age ≤25, POT-OVR gap ≥15). |
+| **Trade Builder** | Interactive three-panel trade interface with park-adjusted player ratings, multiple modes (Fair Trade, Buy Low, Fleece Mode), and trade grades (A+ to F). |
+| **Park Factor Adjustments** | Player values adjusted based on home park factors - identifies players whose stats are suppressed/inflated by their ballpark. |
+
+### 💰 Contract & Financial Tools
+
+| Feature | Description |
+|---------|-------------|
+| **Contract Value Analysis** | $/WAR calculations, surplus value analysis, and automatic contract categorization (Surplus 💰, Fair Value ✅, Albatross 🚨, Arb Target 🎯, Extension 📋). |
+| **Enhanced Contract Parsing** | Support for new OOTP columns: SLR (salary), YL (years left with status), CV (contract value), TY (total years), ECV (extension value), ETY (extension years). |
+| **Extension Watch** | Evaluate pending extensions with grades (Steal 💎, Fair ✅, Risky ⚠️, Overpay 🚨) and red flag detection (age 30+ with long extension, injury concerns, etc.). |
+| **Autocontract Generator** | Generate realistic competing free agent offers with market-derived $/WAR valuations from your league data, 5 team archetypes (Dynasty, Contender, Window Builder, Rebuilding, Tanking), smart age-based contract years, customizable settings (Eye Test Weight, Market Randomness, Hometown Discount), international player support, Lock $/WAR feature, League Scale Multiplier, and OVR-Percentile Valuation option. |
+
+### 🏗️ Roster Building Tools
+
+| Feature | Description |
+|---------|-------------|
+| **Platoon Finder** | Three-panel interface showing platoon pairs (L/R batters at same position), DH candidates (good bat, poor defense), and platoon-proof switch hitters with value assessments. |
+| **Roster Builder Sandbox** | Build hypothetical rosters by selecting players from any team. Full 25-man roster with lineup (9 positions), bench (4 spots), rotation (5 SP), and bullpen (7 RP). Includes team summary with projected WAR, salary, average age/OVR, position grades (A+ to F), and auto-detected archetype fit. |
+| **Auto-Generate Rosters** | Randomized team building with weighted selection based on competitive level (Contender, Middle of the pack, Rebuilding), salary tier (Big spender, Mid-market, Budget), and team identity (Power-focused, Speed-focused, Pitching-focused, etc.). Each generation produces a different, realistic team. |
+
+### 💻 Platform & UX
+
+| Feature | Description |
+|---------|-------------|
+| **Mac Compatibility** | Run from source with Python on macOS - full cross-platform support. |
+| **Updated UI Theme** | Lighter, modern color scheme introduced in v2.7 with improved eye comfort and readability. |
+| **Auto-load Free Agents** | Automatically loads Free Agents.html at startup if present. |
+| **Advanced Stats Module** | Dedicated Stats-Based Scoring tab for stats-based player evaluation. |
 
 ---
 
 ## Table of Contents
 
-- [Fork Overview](#fork-overview)
+- [What is Rosterlytics?](#what-is-rosterlytics)
+- [What's New in Rosterlytics](#whats-new-in-rosterlytics)
 - [Downloading the Latest Version](#downloading-the-latest-version)
 - [Running on Mac](#running-on-mac)
 - [Flexible Weighting System](#flexible-weighting-system)
@@ -38,13 +84,15 @@ This is a fork of [zab1996/HectorOOTP](https://github.com/zab1996/HectorOOTP) th
 - [Roster Builder](#roster-builder)
   - [Auto-Generate Teams](#auto-generate-teams)
 - [Trade Finder Tab](#trade-finder-tab)
+- [Trade Builder Tab](#trade-builder-tab)
 - [Contract Value Tab](#contract-value-tab)
+- [Extension Watch](#extension-watch)
 - [Autocontract Generator](#autocontract-generator)
 - [Platoon Finder Tab](#platoon-finder-tab)
 - [Trade Value Calculator](#trade-value-calculator)
 - [Age Definitions](#age-definitions)
 - [Stat Columns Used](#stat-columns-used)
-- [Hector Data Export Instructions](#hector-data-export-instructions)
+- [Data Export Instructions](#data-export-instructions)
 - [Features Overview](#features-overview)
   - [Core Functionality](#core-functionality)
   - [User Interface Features](#user-interface-features)
@@ -52,12 +100,13 @@ This is a fork of [zab1996/HectorOOTP](https://github.com/zab1996/HectorOOTP) th
   - [Dataset Overview](#dataset-overview)
   - [User Assistance](#user-assistance)
 - [Calculation Flowcharts](#calculation-flowcharts)
+- [Credits](#credits)
 
 ---
 
 ## Downloading the Latest Version
 
-Download the newest build of Hector from the **Releases** page:
+Download the newest build of Rosterlytics from the **Releases** page:
 
 ➡️ [**Download the latest version here**](../../releases)
 
@@ -66,7 +115,7 @@ Download the newest build of Hector from the **Releases** page:
 3. Run the executable (or use Python if running from source).
 
 <details>
-<summary><strong>Showcase: Click to view screenshots of Hector in action</strong></summary>
+<summary><strong>Showcase: Click to view screenshots of Rosterlytics in action</strong></summary>
 
 ![Showcase1](screenshots/showcase1.png)
 ![Showcase2](screenshots/showcase2.png)
@@ -84,16 +133,16 @@ Download the newest build of Hector from the **Releases** page:
 ## Running on Mac
 [⬆️ Back to Top](#top)
 
-Hector can run from source on macOS:
+Rosterlytics can run from source on macOS:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/quarterback/HectorOOTP.git
+   git clone https://github.com/quarterback/PortalOOTP.git
    ```
 
 2. Navigate to the source code directory:
    ```bash
-   cd "HectorOOTP/Hector 2.5 Source Code"
+   cd "PortalOOTP/Hector 2.5 Source Code"
    ```
 
 3. Install dependencies:
@@ -101,7 +150,7 @@ Hector can run from source on macOS:
    pip3 install pandas beautifulsoup4
    ```
 
-4. Run Hector:
+4. Run Rosterlytics:
    ```bash
    python3 main.py
    ```
@@ -123,14 +172,14 @@ How to adjust the weights:
 1. Open `pitcher_weights.py` or `batter_weights.py` in a text editor (e.g., Notepad++, VS Code, or TextEdit on Mac).
 2. Modify values in the `section_weights` dictionary — higher = more influence on the score.
 3. Save your changes in the program folder alongside the `.exe` (or in the source directory on Mac).
-4. In Hector, click the **Reload Data** button to apply changes immediately.
+4. In Rosterlytics, click the **Reload Data** button to apply changes immediately.
 
 ---
 
 ## Stats-Based Scoring
 [⬆️ Back to Top](#top)
 
-Hector includes a stats-based scoring system that evaluates players on actual performance rather than ratings.
+Rosterlytics includes a stats-based scoring system that evaluates players on actual performance rather than ratings.
 
 **How to Enable:**
 - Check the "Use Stats-Based Scoring" toggle in the Pitchers or Batters tab
@@ -753,7 +802,7 @@ The contract value component now factors in contract status:
 ## Age Definitions
 [⬆️ Back to Top](#top)
 
-Hector uses the following age categories for trade analysis:
+Rosterlytics uses the following age categories for trade analysis:
 
 | Category | Age Range | Description |
 |----------|-----------|-------------|
@@ -766,7 +815,7 @@ Hector uses the following age categories for trade analysis:
 ## Stat Columns Used
 [⬆️ Back to Top](#top)
 
-Hector can ingest the following statistics from your OOTP HTML export:
+Rosterlytics can ingest the following statistics from your OOTP HTML export:
 
 ### Batting Stats
 | Stat | Description |
@@ -819,11 +868,11 @@ Hector can ingest the following statistics from your OOTP HTML export:
 | ETY | Extension total years (e.g., `8` or `0` if none) |
 | SctAcc | Scout accuracy |
 
-> **Note:** The new contract columns (CV, TY, ECV, ETY) provide enhanced contract analysis. If these columns are not in your export, Hector will fall back to using SLR and YL for basic contract calculations.
+> **Note:** The new contract columns (CV, TY, ECV, ETY) provide enhanced contract analysis. If these columns are not in your export, Rosterlytics will fall back to using SLR and YL for basic contract calculations.
 
 ---
 
-## Hector Data Export Instructions
+## Data Export Instructions
 [⬆️ Back to Top](#top)
 
 Export player data from OOTP with custom views:
@@ -832,7 +881,7 @@ Export player data from OOTP with custom views:
     - Create a combined view for All Players (see screenshots below)
     - Export the view as HTML
     - Replace the provided `Player List.html`.
-    - Click **Reload Data** in Hector for instant refresh
+    - Click **Reload Data** in Rosterlytics for instant refresh
 
 ### 1. Create the View in OOTP
 
@@ -855,7 +904,7 @@ Include all these Data points/Attributes:
 - Save the view as **Global**
   
 ![views](screenshots/global.png)
-- Name it as **"Hector All"** (or anything you'd like)
+- Name it as **"Rosterlytics All"** (or anything you'd like)
 
 ### 4. Export HTML File
 
@@ -866,7 +915,7 @@ Include all these Data points/Attributes:
 
 ### 5. Replace The Existing File
 
-- Overwrite the `Player List.html` file in your Hector program folder. Restart the program or hit the Reload Button to refresh the data.
+- Overwrite the `Player List.html` file in your Rosterlytics program folder. Restart the program or hit the Reload Button to refresh the data.
 
 ![Export HTML DATA](screenshots/overwrite.png)
 
@@ -898,7 +947,7 @@ For enhanced Trade Finder functionality with team buyer/seller status and park f
 - **Park Factors**: Context for player evaluation (e.g., home run suppression in pitcher parks)
 - **Team Status**: Automatic classification as buyer, seller, or neutral based on standings
 
-> **Note:** Team List.html is optional. If not provided, Hector will show a warning and continue with reduced functionality.
+> **Note:** Team List.html is optional. If not provided, Rosterlytics will show a warning and continue with reduced functionality.
 
 ---
 
@@ -1013,6 +1062,15 @@ For enhanced Trade Finder functionality with team buyer/seller status and park f
 
 ---
 
+## Credits
+[⬆️ Back to Top](#top)
+
+Rosterlytics is built upon the foundation of the original **Hector OOTP Analyzer** created by [zab1996](https://github.com/zab1996/HectorOOTP). We're grateful for the excellent work on the core player evaluation engine, weighted scoring system, and user interface that made this project possible.
+
+The Rosterlytics fork has added extensive new features including stats-based scoring, percentile rankings, trade tools, contract analysis, roster building, hidden gems discovery, franchise archetypes, and much more - but none of it would exist without the original Hector as a starting point.
+
+---
+
 > For issues, guidance, or detailed explanations, explore the program's tooltips or consult the full documentation.
 
-Thank you for using Hector!
+Thank you for using Rosterlytics!
