@@ -514,7 +514,10 @@ def analyze_year_over_year_trends(teams_list):
         
         if curr_pct > 0 and ly_pct > 0:
             change = curr_pct - ly_pct
-            wins_change = parse_number(team.get("W", 0)) - parse_number(team.get("lyW", 0))
+            curr_wins = parse_number(team.get("W", 0))
+            ly_wins = parse_number(team.get("lyW", 0))
+            # Handle potential None values from parse_number
+            wins_change = (curr_wins - ly_wins) if (curr_wins is not None and ly_wins is not None) else 0
             
             team_changes.append({
                 "team": team.get("Abbr", ""),

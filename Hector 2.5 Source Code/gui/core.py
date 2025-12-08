@@ -105,7 +105,13 @@ def build_gui():
     def load_team_data():
         """
         Load team data from Team List.html.
-        Returns dict mapping team abbreviation to team data, or empty dict if file not found.
+        
+        Returns:
+            tuple: (teams_by_abbr dict, team_data_loaded bool, teams_list list)
+                - teams_by_abbr: Dict mapping team abbreviation to team data
+                - team_data_loaded: Boolean indicating if data was successfully loaded
+                - teams_list: Raw list of team dicts for league analytics
+                Returns ({}, False, []) if file not found or parsing fails
         """
         team_file_path = "Team List.html"
         

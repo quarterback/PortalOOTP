@@ -39,10 +39,10 @@ def add_league_tab(notebook, font):
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
     
-    # Bind mousewheel
+    # Bind mousewheel - use canvas.bind instead of bind_all to avoid conflicts
     def _on_mousewheel(event):
         canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-    canvas.bind_all("<MouseWheel>", _on_mousewheel)
+    canvas.bind("<MouseWheel>", _on_mousewheel)
     
     # Header
     header_frame = tk.Frame(scrollable_frame, bg="#2d2d2d")
