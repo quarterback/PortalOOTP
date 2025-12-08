@@ -9,6 +9,7 @@ from pathlib import Path
 from pitchers import calculate_score
 from batters import calculate_batter_score
 from team_parser import parse_team_html, build_teams_by_abbr
+from league_analytics import generate_league_report
 from .style import setup_theme
 from .pitcher_tab import add_pitcher_tab
 from .batter_tab import add_batter_tab
@@ -23,6 +24,7 @@ from .hidden_gems_tab import add_hidden_gems_tab
 from .roster_builder_tab import add_roster_builder_tab
 from .advanced_stats_tab import add_advanced_stats_tab
 from .auto_contract_tab import add_auto_contract_tab
+from .league_tab import add_league_tab
 from percentiles import initialize_percentiles
 from advanced_stats import add_advanced_stats_to_players
 from .widgets import (
@@ -97,6 +99,8 @@ def build_gui():
         team_data_loaded = False  # Track if team data was successfully loaded
         free_agents = []  # Free agent data from Free Agents.html
         free_agents_loaded = False  # Track if free agent data was successfully loaded
+        league_analytics = {}  # League-wide analytics report
+        teams_list = []  # Raw teams list for league analytics
 
     def load_team_data():
         """
@@ -106,22 +110,22 @@ def build_gui():
         team_file_path = "Team List.html"
         
         if not os.path.exists(team_file_path):
-            return {}, False
+            return {}, False, []
         
         try:
             teams_list = parse_team_html(team_file_path)
             if teams_list:
                 teams_by_abbr = build_teams_by_abbr(teams_list)
-                return teams_by_abbr, True
-            return {}, False
+                return teams_by_abbr, True, teams_list
+            return {}, False, []
         except (ValueError, IOError, UnicodeDecodeError) as e:
             # Log specific parsing errors but continue gracefully
             print(f"Warning: Could not parse Team List.html: {e}")
-            return {}, False
+            return {}, False, []
         except Exception as e:
             # Catch unexpected errors but don't crash the app
             print(f"Warning: Unexpected error loading team data: {e}")
-            return {}, False
+            return {}, False, []
 
     def load_free_agents_data():
         """
@@ -228,9 +232,18 @@ def build_gui():
                 result["batters"] = sorted(DATA.batters, key=lambda b: b["Scores"].get("total", 0), reverse=True)
                 
                 # Load team data (optional - app continues if not found)
-                DATA.teams_by_abbr, DATA.team_data_loaded = load_team_data()
+                DATA.teams_by_abbr, DATA.team_data_loaded, DATA.teams_list = load_team_data()
                 result["teams_by_abbr"] = DATA.teams_by_abbr
                 result["team_data_loaded"] = DATA.team_data_loaded
+                result["teams_list"] = DATA.teams_list
+                
+                # Generate league analytics if team data loaded
+                if DATA.team_data_loaded and DATA.teams_list:
+                    DATA.league_analytics = generate_league_report(DATA.teams_list)
+                    result["league_analytics"] = DATA.league_analytics
+                else:
+                    DATA.league_analytics = {}
+                    result["league_analytics"] = {}
                 
                 # Load free agents data (optional - app continues if not found)
                 DATA.free_agents, DATA.free_agents_loaded = load_free_agents_data()
@@ -286,6 +299,7 @@ def build_gui():
             pitcher_tab = add_pitcher_tab(notebook, font)
             batter_tab = add_batter_tab(notebook, font)
             teams_tab = add_teams_tab(notebook, font)
+            league_tab = add_league_tab(notebook, font)
             trade_tab = add_trade_tab(notebook, font)
             contract_tab = add_contract_tab(notebook, font)
             trade_finder_tab = add_trade_finder_tab(notebook, font)
@@ -302,6 +316,7 @@ def build_gui():
                 "pitcher_tab": pitcher_tab,
                 "batter_tab": batter_tab,
                 "teams_tab": teams_tab,
+                "league_tab": league_tab,
                 "trade_tab": trade_tab,
                 "contract_tab": contract_tab,
                 "trade_finder_tab": trade_finder_tab,
@@ -336,6 +351,10 @@ def build_gui():
                             pitcher_tab.refresh(result_reload["pitchers"])
                             batter_tab.refresh(result_reload["batters"])
                             teams_tab.refresh(result_reload["pitchers"], result_reload["batters"])
+                            league_tab.refresh(
+                                result_reload.get("teams_list", []),
+                                result_reload.get("league_analytics", {})
+                            )
                             trade_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             contract_tab.refresh(result_reload["pitchers"], result_reload["batters"])
                             # Pass team data to trade_finder_tab
@@ -369,6 +388,10 @@ def build_gui():
             pitcher_tab.refresh(result["pitchers"])
             batter_tab.refresh(result["batters"])
             teams_tab.refresh(result["pitchers"], result["batters"])
+            league_tab.refresh(
+                result.get("teams_list", []),
+                result.get("league_analytics", {})
+            )
             trade_tab.refresh(result["pitchers"], result["batters"])
             contract_tab.refresh(result["pitchers"], result["batters"])
             # Pass team data to trade_finder_tab
